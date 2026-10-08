@@ -1,6 +1,7 @@
 """Recursive hierarchical text splitter."""
 
 from collections.abc import Callable
+from typing import Any
 
 from signalrag.chunking.base import BaseChunker
 
@@ -18,12 +19,14 @@ class RecursiveCharacterChunker(BaseChunker):
         separators: list[str] | None = None,
         length_function: Callable[[str], int] | None = None,
         keep_separator: bool = True,
+        metadata_extractor: Any = None,
     ) -> None:
         super().__init__(
             chunk_size=chunk_size,
             chunk_overlap=chunk_overlap,
             min_chunk_size=min_chunk_size,
             length_function=length_function,
+            metadata_extractor=metadata_extractor,
         )
         self.separators = separators or list(self.DEFAULT_SEPARATORS)
         self.keep_separator = keep_separator

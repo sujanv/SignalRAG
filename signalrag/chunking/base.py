@@ -1,10 +1,12 @@
 """Base abstractions for document chunking."""
 
+import hashlib
 from abc import ABC, abstractmethod
 from collections.abc import Callable
 
 import tiktoken
 
+from signalrag.chunking.metadata_extractor import ChunkMetadataExtractor
 from signalrag.models.chunk import Chunk
 from signalrag.models.document import Document
 
@@ -28,6 +30,7 @@ class BaseChunker(ABC):
         chunk_overlap: int = 64,
         min_chunk_size: int = 50,
         length_function: Callable[[str], int] | None = None,
+        metadata_extractor: ChunkMetadataExtractor | None = None,
     ) -> None:
         if chunk_overlap >= chunk_size:
             raise ValueError(f"chunk_overlap ({chunk_overlap}) must be strictly less than chunk_size ({chunk_size})")
@@ -35,6 +38,7 @@ class BaseChunker(ABC):
         self.chunk_overlap = chunk_overlap
         self.min_chunk_size = min_chunk_size
         self.length_function = length_function or len
+        self.metadata_extractor = metadata_extractor or ChunkMetadataExtractor()
 
     @abstractmethod
     def chunk_text(self, text: str) -> list[str]:
@@ -47,7 +51,6 @@ class BaseChunker(ABC):
         token_counter = get_token_counter()
         chunks: list[Chunk] = []
 
-        # Find character offsets in document.text
         current_offset = 0
         for idx, chunk_text in enumerate(raw_chunks):
             chunk_text_stripped = chunk_text.strip()
@@ -56,7 +59,6 @@ class BaseChunker(ABC):
 
             start_idx = document.text.find(chunk_text_stripped, current_offset)
             if start_idx == -1:
-                # If overlap shifted or modified formatting, search from 0
                 start_idx = document.text.find(chunk_text_stripped)
                 if start_idx == -1:
                     start_idx = current_offset
@@ -65,15 +67,20 @@ class BaseChunker(ABC):
             current_offset = max(current_offset, start_idx + 1)
 
             token_count = token_counter(chunk_text_stripped)
-            chunk = Chunk.create(
-                document_id=document.id,
+            meta = self.metadata_extractor.extract_metadata(
+                document=document,
                 chunk_index=idx,
-                text=chunk_text_stripped,
-                source=document.metadata.source,
                 start_char=start_idx,
                 end_char=end_idx,
                 token_count=token_count,
-                title=document.metadata.title,
+            )
+
+            chunk_id = hashlib.sha256(f"{document.id}:{idx}:{chunk_text_stripped}".encode()).hexdigest()[:16]
+            chunk = Chunk(
+                id=chunk_id,
+                document_id=document.id,
+                text=chunk_text_stripped,
+                metadata=meta,
             )
             chunks.append(chunk)
 

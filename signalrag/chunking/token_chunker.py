@@ -28,6 +28,7 @@ class TokenChunker(BaseChunker):
         chunk_overlap: int = 64,
         min_chunk_size: int = 50,
         encoding_name: str = "cl100k_base",
+        metadata_extractor: Any = None,
     ) -> None:
         self.tokenizer: Any
         try:
@@ -42,6 +43,7 @@ class TokenChunker(BaseChunker):
             chunk_size=chunk_size,
             chunk_overlap=chunk_overlap,
             min_chunk_size=min_chunk_size,
+            metadata_extractor=metadata_extractor,
             length_function=lambda t: len(self.tokenizer.encode(t, disallowed_special=()))
             if hasattr(self.tokenizer, "encode")
             else len(t.split()),
