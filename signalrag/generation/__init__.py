@@ -1,5 +1,10 @@
 """Answer generation, citations, guardrails, and streaming."""
 
+from signalrag.generation.citations import (
+    CitationTracker,
+    ClaimCitation,
+    TrackedAnswer,
+)
 from signalrag.generation.generator import AnswerGenerator, GeneratedAnswer
 from signalrag.generation.llm import (
     BaseLLMClient,
@@ -23,4 +28,7 @@ __all__ = [
     "format_rag_prompt",
     "AnswerGenerator",
     "GeneratedAnswer",
+    "CitationTracker",
+    "ClaimCitation",
+    "TrackedAnswer",
 ]
