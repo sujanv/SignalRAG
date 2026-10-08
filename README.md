@@ -76,6 +76,9 @@ signalrag index ./data/
 
 # Hybrid search (BM25 + Semantic) with cross-encoder reranking and context compression
 signalrag search "What is MRR in SignalRAG?" --rerank --compress --debug
+
+# Grounded question-answering with inline citations & token streaming
+signalrag query "How does SignalRAG evaluate retrieval systems?" --stream
 ```
 
 ---
@@ -85,6 +88,6 @@ signalrag search "What is MRR in SignalRAG?" --rerank --compress --debug
 - [x] **Phase 1 — Foundation (Hours 01–06)**: Configuration, Document Models, Ingestion, PDF Parsing, Tests
 - [x] **Phase 2 — Chunking & Indexing (Hours 07–12)**: Splitters, Metadata, Vector Store, Incremental Indexing
 - [x] **Phase 3 — Retrieval (Hours 13–19)**: Semantic, BM25, Hybrid, Filters, Query Rewriting, Reranking, Context Compression
-- [ ] **Phase 4 — Generation & Citations (Hours 20–24)**: Answers, Inline Citations, Guardrails, Streaming
+- [x] **Phase 4 — Generation & Citations (Hours 20–24)**: Answers, Inline Citations, Guardrails, Streaming
 - [ ] **Phase 5 — Evaluation (Hours 25–30)**: Retrieval & Answer Metrics, Runner, Experiments
 - [ ] **Phase 6 — Deep Diagnostics & Polish (Hours 31–40)**: Debugger, Failure Analysis, API, Web UI
