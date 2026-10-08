@@ -4,6 +4,7 @@ from collections.abc import Callable, Iterator
 from pathlib import Path
 
 from signalrag.ingestion.base import BaseLoader
+from signalrag.ingestion.pdf_loader import PDFLoader
 from signalrag.ingestion.text_loader import TextLoader
 from signalrag.models.document import Document
 
@@ -21,6 +22,7 @@ class DirectoryLoader(BaseLoader):
         ".json": lambda p: TextLoader(p),
         ".csv": lambda p: TextLoader(p),
         ".log": lambda p: TextLoader(p),
+        ".pdf": lambda p: PDFLoader(p),
     }
 
     def __init__(
