@@ -17,6 +17,7 @@ from signalrag.generation.prompts import (
     format_context_block,
     format_rag_prompt,
 )
+from signalrag.generation.rendering import CitationRenderer
 
 __all__ = [
     "BaseLLMClient",
@@ -31,4 +32,5 @@ __all__ = [
     "CitationTracker",
     "ClaimCitation",
     "TrackedAnswer",
+    "CitationRenderer",
 ]
