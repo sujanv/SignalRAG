@@ -1,0 +1,46 @@
+app_name: SignalRAG
+debug: false
+log_level: INFO
+
+llm:
+  provider: openai
+  model: gpt-4o-mini
+  temperature: 0.0
+  max_tokens: 1024
+  timeout_seconds: 30.0
+
+embedding:
+  provider: local
+  model: all-MiniLM-L6-v2
+  dimension: 384
+  batch_size: 32
+
+vector_store:
+  type: lancedb
+  path: ./storage/vector_store
+  collection_name: signalrag_chunks
+
+chunking:
+  strategy: recursive
+  chunk_size: 512
+  chunk_overlap: 64
+  min_chunk_size: 50
+
+retrieval:
+  top_k: 5
+  hybrid_alpha: 0.5
+  use_bm25: true
+  use_semantic: true
+  reranker_enabled: false
+  reranker_model: cross-encoder/ms-marco-MiniLM-L-6-v2
+  rerank_top_k: 3
+  compression_enabled: false
+
+evaluation:
+  dataset_path: null
+  output_dir: ./storage/eval_results
+  k_values:
+    - 1
+    - 3
+    - 5
+    - 10
