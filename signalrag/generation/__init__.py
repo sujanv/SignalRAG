@@ -6,6 +6,11 @@ from signalrag.generation.citations import (
     TrackedAnswer,
 )
 from signalrag.generation.generator import AnswerGenerator, GeneratedAnswer
+from signalrag.generation.guardrails import (
+    GroundedAnswerGuardrail,
+    GuardrailEvaluation,
+    GuardrailStatus,
+)
 from signalrag.generation.llm import (
     BaseLLMClient,
     MockLLMClient,
@@ -33,4 +38,7 @@ __all__ = [
     "ClaimCitation",
     "TrackedAnswer",
     "CitationRenderer",
+    "GuardrailStatus",
+    "GuardrailEvaluation",
+    "GroundedAnswerGuardrail",
 ]
