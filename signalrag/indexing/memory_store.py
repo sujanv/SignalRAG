@@ -55,27 +55,12 @@ class MemoryVectorStore(BaseVectorStore):
         return len(valid_chunks)
 
     def _matches_filters(self, chunk: Chunk, filters: dict[str, Any] | None) -> bool:
-        """Evaluate equality and membership filters against chunk metadata."""
+        """Evaluate equality, comparison, and operator filters using MetadataFilter."""
         if not filters:
             return True
+        from signalrag.retrieval.filter import MetadataFilter
 
-        for k, expected in filters.items():
-            meta = chunk.metadata
-            val = getattr(meta, k, None)
-            if val is None:
-                val = meta.extra.get(k)
-
-            if val is None:
-                return False
-
-            if isinstance(expected, list | tuple | set):
-                if val not in expected:
-                    return False
-            else:
-                if str(val) != str(expected):
-                    return False
-
-        return True
+        return MetadataFilter(filters).matches(chunk)
 
     def search(
         self,

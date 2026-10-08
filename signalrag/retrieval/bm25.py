@@ -60,18 +60,9 @@ class BM25Retriever(BaseRetriever):
         """Check metadata equality or membership filter."""
         if not filters:
             return True
-        for k, expected in filters.items():
-            val = getattr(chunk.metadata, k, None)
-            if val is None:
-                val = chunk.metadata.extra.get(k)
-            if val is None:
-                return False
-            if isinstance(expected, list | tuple | set):
-                if val not in expected:
-                    return False
-            elif str(val) != str(expected):
-                return False
-        return True
+        from signalrag.retrieval.filter import MetadataFilter
+
+        return MetadataFilter(filters).matches(chunk)
 
     def retrieve(
         self,
