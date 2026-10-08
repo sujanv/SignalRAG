@@ -220,5 +220,80 @@ def search(
     console.print(table)
 
 
+@app.command()
+def query(
+    question: Annotated[str, typer.Argument(help="Question to ask SignalRAG.")],
+    top_k: Annotated[int, typer.Option("--top-k", "-k", help="Number of chunks to retrieve.")] = 5,
+    rerank: Annotated[bool, typer.Option("--rerank/--no-rerank", help="Apply reranking.")] = True,
+    compress: Annotated[bool, typer.Option("--compress/--no-compress", help="Compress retrieved context.")] = False,
+    stream: Annotated[bool, typer.Option("--stream/--no-stream", help="Stream response tokens.")] = True,
+    storage_dir: Annotated[Path, typer.Option("--storage-dir", help="Directory of vector index.")] = Path("./storage/vector_store"),
+) -> None:
+    """Ask a question and receive a grounded answer with inline citations."""
+    from rich.markdown import Markdown
+
+    from signalrag.embeddings.factory import create_embedding_service
+    from signalrag.generation.engine import SignalRAGEngine
+    from signalrag.retrieval import (
+        BM25Retriever,
+        RetrievalPipeline,
+        SemanticRetriever,
+    )
+
+    index_path = storage_dir / "index.json"
+    if not index_path.exists():
+        console.print(f"[bold red]Error:[/bold red] No index found at '{index_path}'. Run `signalrag index <path>` first.")
+        raise typer.Exit(code=1)
+
+    vector_store = MemoryVectorStore(storage_path=index_path)
+    vector_store.load(index_path)
+
+    all_chunks = list(vector_store._chunks.values())
+    embedding_service = create_embedding_service()
+
+    semantic = SemanticRetriever(vector_store=vector_store, embedding_service=embedding_service)
+    bm25 = BM25Retriever(chunks=all_chunks)
+    pipeline = RetrievalPipeline(semantic_retriever=semantic, bm25_retriever=bm25)
+
+    engine = SignalRAGEngine(retrieval_pipeline=pipeline)
+
+    console.print(f"\n[bold cyan]Question:[/bold cyan] {question}\n")
+
+    if stream:
+        streaming_res = engine.stream_ask(
+            question=question,
+            top_k=top_k,
+            rerank=rerank,
+            compress=compress,
+        )
+        console.print("[bold green]Answer:[/bold green] ", end="")
+        citations = []
+        for event in streaming_res:
+            if event.event_type == "token":
+                console.print(event.data, end="", highlight=False)
+            elif event.event_type == "citation":
+                citations = event.data
+        console.print("\n")
+
+        if citations:
+            cite_table = Table(title="Sources")
+            cite_table.add_column("Ref", justify="center", style="cyan")
+            cite_table.add_column("Document Source", style="magenta")
+            cite_table.add_column("Page", justify="center")
+            cite_table.add_column("Supporting Excerpt", style="yellow")
+            for c in citations:
+                p = str(c.get("page_number") or "-")
+                cite_table.add_row(f"[{c.get('index')}]", Path(c.get("source", "")).name, p, c.get("quote", "")[:90] + "...")
+            console.print(cite_table)
+    else:
+        resp = engine.ask(
+            question=question,
+            top_k=top_k,
+            rerank=rerank,
+            compress=compress,
+        )
+        console.print(Markdown(resp.rendered_markdown))
+
+
 if __name__ == "__main__":
     app()
