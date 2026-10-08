@@ -69,12 +69,21 @@ cp .env.example .env
 pytest
 ```
 
+### 4. Index & Search
+```bash
+# Incrementally parse, chunk, embed, and index
+signalrag index ./data/
+
+# Perform semantic vector search
+signalrag search "hybrid retrieval"
+```
+
 ---
 
 ## 📊 Milestone Roadmap
 
 - [x] **Phase 1 — Foundation (Hours 01–06)**: Configuration, Document Models, Ingestion, PDF Parsing, Tests
-- [ ] **Phase 2 — Chunking & Indexing (Hours 07–12)**: Splitters, Metadata, Vector Store, Incremental Indexing
+- [x] **Phase 2 — Chunking & Indexing (Hours 07–12)**: Splitters, Metadata, Vector Store, Incremental Indexing
 - [ ] **Phase 3 — Retrieval (Hours 13–19)**: Semantic, BM25, Hybrid, Filters, Query Rewriting, Reranking
 - [ ] **Phase 4 — Generation & Citations (Hours 20–24)**: Answers, Inline Citations, Guardrails, Streaming
 - [ ] **Phase 5 — Evaluation (Hours 25–30)**: Retrieval & Answer Metrics, Runner, Experiments
