@@ -91,5 +91,5 @@ def test_cli_index_and_search(tmp_path: Path):
         ["search", "quantum superposition", "--storage-dir", str(storage_dir)],
     )
     assert res_search.exit_code == 0
-    assert "Semantic Search Results" in res_search.stdout
+    assert "Retrieval Results for" in res_search.stdout
     assert "quantum.txt" in res_search.stdout

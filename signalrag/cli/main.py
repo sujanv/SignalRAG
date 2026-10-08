@@ -126,9 +126,22 @@ def index(
 def search(
     query: Annotated[str, typer.Argument(help="Search query text.")],
     top_k: Annotated[int, typer.Option("--top-k", "-k", help="Number of results to retrieve.")] = 5,
+    hybrid: Annotated[bool, typer.Option("--hybrid/--vector-only", help="Use hybrid search (BM25 + Semantic).")] = True,
+    rerank: Annotated[bool, typer.Option("--rerank", help="Apply second-stage reranking.")] = False,
+    compress: Annotated[bool, typer.Option("--compress", help="Compress retrieved context chunks.")] = False,
+    debug: Annotated[bool, typer.Option("--debug", "-d", help="Display diagnostic pipeline trace.")] = False,
+    author: Annotated[str | None, typer.Option("--author", help="Filter by author.")] = None,
+    source: Annotated[str | None, typer.Option("--source", help="Filter by source substring.")] = None,
     storage_dir: Annotated[Path, typer.Option("--storage-dir", help="Directory of vector index.")] = Path("./storage/vector_store"),
 ) -> None:
-    """Search indexed documents semantically using vector similarity."""
+    """Search indexed documents using hybrid retrieval, reranking, and context compression."""
+    from signalrag.embeddings.factory import create_embedding_service
+    from signalrag.retrieval import (
+        BM25Retriever,
+        RetrievalPipeline,
+        SemanticRetriever,
+    )
+
     index_path = storage_dir / "index.json"
     if not index_path.exists():
         console.print(f"[bold red]Error:[/bold red] No index found at '{index_path}'. Run `signalrag index <path>` first.")
@@ -137,16 +150,56 @@ def search(
     vector_store = MemoryVectorStore(storage_path=index_path)
     vector_store.load(index_path)
 
-    pipeline = IndexingPipeline(vector_store=vector_store)
-    results = pipeline.search(query, top_k=top_k)
+    all_chunks = list(vector_store._chunks.values())
+    embedding_service = create_embedding_service()
+
+    semantic_retriever = SemanticRetriever(vector_store=vector_store, embedding_service=embedding_service)
+    bm25_retriever = BM25Retriever(chunks=all_chunks)
+
+    pipeline = RetrievalPipeline(
+        semantic_retriever=semantic_retriever,
+        bm25_retriever=bm25_retriever,
+    )
+
+    # Build filters
+    filters = {}
+    if author:
+        filters["author"] = author
+    if source:
+        filters["source"] = {"$contains": source}
+
+    response = pipeline.retrieve_with_trace(
+        query=query,
+        top_k=top_k,
+        filters=filters if filters else None,
+        rerank=rerank,
+        compress=compress,
+    )
+    results = response.results
+    trace = response.trace
+
+    if debug:
+        trace_table = Table(title="Retrieval Pipeline Diagnostic Trace")
+        trace_table.add_column("Stage", style="cyan")
+        trace_table.add_column("Details", style="yellow")
+        trace_table.add_column("Latency", justify="right", style="green")
+
+        trace_table.add_row("Raw Query", trace.raw_query, "-")
+        trace_table.add_row("Rewritten", ", ".join(trace.rewritten_queries), f"{trace.stages_latency_ms.get('query_rewrite', 0)}ms")
+        trace_table.add_row("Hybrid Pool", f"{trace.hybrid_candidates_count} candidates", f"{trace.stages_latency_ms.get('hybrid_retrieval', 0)}ms")
+        trace_table.add_row("Reranker", f"{trace.reranked_candidates_count} candidates", f"{trace.stages_latency_ms.get('reranking', 0)}ms")
+        trace_table.add_row("Compression", f"{trace.final_results_count} final", f"{trace.stages_latency_ms.get('compression', 0)}ms")
+        trace_table.add_row("Total Time", "", f"[bold]{trace.total_latency_ms}ms[/bold]")
+        console.print(trace_table)
 
     if not results:
         console.print("[yellow]No relevant chunks found.[/yellow]")
         return
 
-    table = Table(title=f"Semantic Search Results for: '{query}' ({len(results)} matches)")
+    table = Table(title=f"Retrieval Results for: '{query}' ({len(results)} matches)")
     table.add_column("Rank", justify="center", style="cyan")
     table.add_column("Score", justify="right", style="green")
+    table.add_column("Method", style="blue")
     table.add_column("Source", style="magenta")
     table.add_column("Page", justify="center")
     table.add_column("Content Snippet", style="yellow")
@@ -158,6 +211,7 @@ def search(
         table.add_row(
             str(res.rank or 1),
             f"{res.score:.4f}",
+            res.retrieval_method,
             Path(chunk.metadata.source).name,
             page,
             snippet,
