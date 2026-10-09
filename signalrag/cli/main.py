@@ -572,3 +572,31 @@ def analyze_failures(
     analyzer = FailureAnalyzer()
     summary = analyzer.analyze(target_run.report)
     render_failure_analysis(summary, console=console)
+
+
+@app.command("compare")
+def compare_runs(
+    run_a: Annotated[str, typer.Argument(help="First experiment run ID")],
+    run_b: Annotated[str, typer.Argument(help="Second experiment run ID")],
+    storage_dir: Annotated[
+        Path,
+        typer.Option("--dir", "-d", help="Experiment storage directory"),
+    ] = Path("storage/experiments"),
+) -> None:
+    """Compare two evaluation runs side by side."""
+    from signalrag.evaluation.comparison import compare_experiments, render_comparison_table
+    from signalrag.evaluation.tracker import ExperimentTracker
+
+    tracker = ExperimentTracker(storage_dir=storage_dir)
+    exp_a = tracker.get_run(run_a)
+    exp_b = tracker.get_run(run_b)
+
+    if not exp_a:
+        console.print(f"[red]Experiment {run_a} not found[/red]")
+        raise typer.Exit(1)
+    if not exp_b:
+        console.print(f"[red]Experiment {run_b} not found[/red]")
+        raise typer.Exit(1)
+
+    comp = compare_experiments(exp_a, exp_b)
+    render_comparison_table(comp, console=console)
