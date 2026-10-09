@@ -419,3 +419,67 @@ def evaluate_benchmark(
     if output_path:
         report.to_json(output_path)
         console.print(f"[green]Saved evaluation report to {output_path}[/green]")
+
+
+experiments_app = typer.Typer(help="Manage and inspect evaluation experiment runs.")
+app.add_typer(experiments_app, name="experiments")
+
+
+@experiments_app.command("list")
+def list_experiments(
+    storage_dir: Annotated[
+        Path, typer.Option("--dir", "-d", help="Experiment storage directory")
+    ] = Path("storage/experiments"),
+) -> None:
+    """List tracked evaluation experiments."""
+    from signalrag.evaluation.tracker import ExperimentTracker
+
+    tracker = ExperimentTracker(storage_dir=storage_dir)
+    runs = tracker.list_runs()
+
+    if not runs:
+        console.print("[yellow]No experiments recorded yet in storage/experiments[/yellow]")
+        return
+
+    table = Table(title="SignalRAG Experiments", show_lines=True)
+    table.add_column("Run ID", style="cyan")
+    table.add_column("Name", style="bold")
+    table.add_column("Recall@5", justify="right")
+    table.add_column("MRR", justify="right")
+    table.add_column("Faithfulness", justify="right")
+    table.add_column("Avg Latency", justify="right")
+
+    for r in runs:
+        table.add_row(
+            r.id,
+            r.name,
+            f"{r.report.retrieval_metrics.recall_at_5 * 100:.1f}%",
+            f"{r.report.retrieval_metrics.mrr:.2f}",
+            f"{r.report.avg_faithfulness * 100:.1f}%",
+            f"{r.report.latency.avg_s:.2f}s",
+        )
+    console.print(table)
+
+
+@experiments_app.command("show")
+def show_experiment(
+    run_id: Annotated[str, typer.Argument(help="Experiment run ID")],
+    storage_dir: Annotated[
+        Path, typer.Option("--dir", "-d", help="Experiment storage directory")
+    ] = Path("storage/experiments"),
+) -> None:
+    """Display detailed metrics for an experiment run."""
+    from signalrag.evaluation.tracker import ExperimentTracker
+
+    tracker = ExperimentTracker(storage_dir=storage_dir)
+    run = tracker.get_run(run_id)
+    if not run:
+        console.print(f"[red]Experiment {run_id} not found.[/red]")
+        raise typer.Exit(1)
+
+    console.print(f"[bold cyan]Experiment: {run.name} ({run.id})[/bold cyan]")
+    console.print(f"Git commit: {run.git_commit}")
+    console.print(f"Parameters: {run.config_params}")
+    console.print(f"Recall@5: {run.report.retrieval_metrics.recall_at_5 * 100:.1f}%")
+    console.print(f"MRR: {run.report.retrieval_metrics.mrr:.2f}")
+    console.print(f"Faithfulness: {run.report.avg_faithfulness * 100:.1f}%")
