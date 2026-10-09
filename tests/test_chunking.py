@@ -9,7 +9,8 @@ from signalrag.models.document import Document
 def test_recursive_chunker_basic():
     text = (
         "Introduction to SignalRAG.\n\n"
-        "SignalRAG is designed for production RAG evaluation. " * 10
+        "SignalRAG is designed for production RAG evaluation. "
+        * 10
         + "\n\n"
         + "Chapter 2: Retrieval techniques. " * 10
     )

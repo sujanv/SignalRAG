@@ -6,9 +6,15 @@ from signalrag.retrieval import MetadataFilter
 
 
 def test_metadata_filter_operators():
-    c1 = Chunk.create("d1", 0, "Paper 1", "docs/ai_2023.pdf", author="Alice", page_number=2, year=2023)
-    c2 = Chunk.create("d2", 0, "Paper 2", "docs/ai_2021.pdf", author="Bob", page_number=5, year=2021)
-    c3 = Chunk.create("d3", 0, "Paper 3", "docs/ml_2024.pdf", author="Charlie", page_number=12, year=2024)
+    c1 = Chunk.create(
+        "d1", 0, "Paper 1", "docs/ai_2023.pdf", author="Alice", page_number=2, year=2023
+    )
+    c2 = Chunk.create(
+        "d2", 0, "Paper 2", "docs/ai_2021.pdf", author="Bob", page_number=5, year=2021
+    )
+    c3 = Chunk.create(
+        "d3", 0, "Paper 3", "docs/ml_2024.pdf", author="Charlie", page_number=12, year=2024
+    )
 
     # 1. $gte comparison
     f_year = MetadataFilter({"year": {"$gte": 2023}})

@@ -16,7 +16,9 @@ def test_normalize_pdf_text():
     assert "\n\nParagraph 2." in cleaned
 
 
-def create_sample_pdf(file_path: Path, pages: list[str], title: str = "Test Doc", author: str = "Test Author"):
+def create_sample_pdf(
+    file_path: Path, pages: list[str], title: str = "Test Doc", author: str = "Test Author"
+):
     """Helper to generate a valid PDF for testing without network."""
     writer = PdfWriter()
     for _text in pages:
@@ -24,10 +26,12 @@ def create_sample_pdf(file_path: Path, pages: list[str], title: str = "Test Doc"
         page = PageObject.create_blank_page(width=300, height=300)
         writer.add_page(page)
 
-    writer.add_metadata({
-        "/Title": title,
-        "/Author": author,
-    })
+    writer.add_metadata(
+        {
+            "/Title": title,
+            "/Author": author,
+        }
+    )
     with file_path.open("wb") as f:
         writer.write(f)
 

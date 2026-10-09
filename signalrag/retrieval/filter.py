@@ -96,12 +96,16 @@ class MetadataFilter:
         for key, criterion in spec.items():
             # Logical operators
             if key == "$and":
-                if not isinstance(criterion, list) or not all(self._evaluate_spec(chunk, s) for s in criterion):
+                if not isinstance(criterion, list) or not all(
+                    self._evaluate_spec(chunk, s) for s in criterion
+                ):
                     return False
                 continue
 
             if key == "$or":
-                if not isinstance(criterion, list) or not any(self._evaluate_spec(chunk, s) for s in criterion):
+                if not isinstance(criterion, list) or not any(
+                    self._evaluate_spec(chunk, s) for s in criterion
+                ):
                     return False
                 continue
 

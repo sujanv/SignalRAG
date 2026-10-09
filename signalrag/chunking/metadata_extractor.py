@@ -17,7 +17,9 @@ class ChunkMetadataExtractor:
         self.track_sections = track_sections
         self.track_pages = track_pages
 
-    def find_active_section(self, document_text: str, start_char: int, end_char: int) -> tuple[str | None, list[str]]:
+    def find_active_section(
+        self, document_text: str, start_char: int, end_char: int
+    ) -> tuple[str | None, list[str]]:
         """Find the active section heading and section hierarchy preceding or within the chunk."""
         if not self.track_sections or end_char <= 0:
             return None, []
@@ -39,7 +41,9 @@ class ChunkMetadataExtractor:
 
         return section_title, hierarchy
 
-    def find_active_page(self, document_text: str, start_char: int, end_char: int, fallback_page: int | None = None) -> int | None:
+    def find_active_page(
+        self, document_text: str, start_char: int, end_char: int, fallback_page: int | None = None
+    ) -> int | None:
         """Find the active page number up to end_char based on page boundary markers."""
         if fallback_page is not None:
             return fallback_page
@@ -76,7 +80,9 @@ class ChunkMetadataExtractor:
             extra_meta["section_hierarchy"] = hierarchy
 
         fallback_page = document.metadata.extra.get("page_number")
-        page_num = self.find_active_page(document.text, start_char, end_char, fallback_page=fallback_page)
+        page_num = self.find_active_page(
+            document.text, start_char, end_char, fallback_page=fallback_page
+        )
 
         # Inherit document fields
         extra_meta["file_name"] = document.metadata.file_name

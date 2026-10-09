@@ -1,0 +1,251 @@
+{
+  "name": "signalrag-core-benchmark",
+  "description": "Standard SignalRAG retrieval and generation benchmark questions",
+  "version": "1.0.0",
+  "examples": [
+    {
+      "id": "eval-001",
+      "question": "What is the primary role of BM25 lexical search in a hybrid retrieval architecture?",
+      "ground_truth_answer": "BM25 provides exact keyword and term frequency matching, preventing false negatives on acronyms, product IDs, and rare tokens where semantic vector embeddings often experience semantic drift.",
+      "expected_doc_ids": [
+        "doc-hybrid-retrieval",
+        "doc-bm25-theory"
+      ],
+      "expected_chunk_ids": [
+        "chunk-bm25-01",
+        "chunk-hybrid-02"
+      ],
+      "metadata": {
+        "category": "retrieval",
+        "difficulty": "easy",
+        "has_citations": true
+      }
+    },
+    {
+      "id": "eval-002",
+      "question": "How does Reciprocal Rank Fusion (RRF) combine dense and sparse ranking scores?",
+      "ground_truth_answer": "RRF combines rankings by computing sum(1.0 / (k + rank)) across retrieved candidate lists, eliminating score scale calibration issues between cosine similarity and unbounded BM25 scores.",
+      "expected_doc_ids": [
+        "doc-rrf-fusion"
+      ],
+      "expected_chunk_ids": [
+        "chunk-rrf-01"
+      ],
+      "metadata": {
+        "category": "retrieval",
+        "difficulty": "medium",
+        "has_citations": true
+      }
+    },
+    {
+      "id": "eval-003",
+      "question": "Why should grounded-answer guardrails verify context sufficiency before answer generation?",
+      "ground_truth_answer": "Verifying context sufficiency allows the RAG system to decline answering or qualify uncertainty, preventing hallucination when the retrieved chunks lack requisite evidence.",
+      "expected_doc_ids": [
+        "doc-guardrails",
+        "doc-groundedness"
+      ],
+      "expected_chunk_ids": [
+        "chunk-guardrails-01"
+      ],
+      "metadata": {
+        "category": "generation",
+        "difficulty": "medium",
+        "has_citations": true
+      }
+    },
+    {
+      "id": "eval-004",
+      "question": "What is the purpose of context compression in the retrieval pipeline?",
+      "ground_truth_answer": "Context compression prunes irrelevant sentences and whitespace from retrieved chunks, maximizing LLM attention focus and reducing context window prompt costs.",
+      "expected_doc_ids": [
+        "doc-context-compression"
+      ],
+      "expected_chunk_ids": [
+        "chunk-compression-01"
+      ],
+      "metadata": {
+        "category": "retrieval",
+        "difficulty": "medium",
+        "has_citations": true
+      }
+    },
+    {
+      "id": "eval-005",
+      "question": "How does cross-encoder reranking improve retrieval precision compared to bi-encoders?",
+      "ground_truth_answer": "Cross-encoders compute full cross-attention between query and passage tokens simultaneously, capturing fine-grained semantic nuances and dependencies that independent bi-encoder vector projections miss.",
+      "expected_doc_ids": [
+        "doc-reranker"
+      ],
+      "expected_chunk_ids": [
+        "chunk-reranker-01",
+        "chunk-reranker-02"
+      ],
+      "metadata": {
+        "category": "retrieval",
+        "difficulty": "hard",
+        "has_citations": true
+      }
+    },
+    {
+      "id": "eval-006",
+      "question": "What mechanism ensures citations accurately link back to specific source chunk IDs?",
+      "ground_truth_answer": "Citation tracking inspects generated claim sentences, matches references against retrieved chunk indices, and binds unique chunk identifiers, document titles, and page numbers.",
+      "expected_doc_ids": [
+        "doc-citations"
+      ],
+      "expected_chunk_ids": [
+        "chunk-citations-01"
+      ],
+      "metadata": {
+        "category": "generation",
+        "difficulty": "medium",
+        "has_citations": true
+      }
+    },
+    {
+      "id": "eval-007",
+      "question": "How does incremental indexing detect unchanged files during updates?",
+      "ground_truth_answer": "Incremental indexing maintains a content hash ledger, comparing file SHA256 signatures to skip re-parsing and re-embedding unchanged source documents.",
+      "expected_doc_ids": [
+        "doc-incremental-indexing"
+      ],
+      "expected_chunk_ids": [
+        "chunk-incremental-01"
+      ],
+      "metadata": {
+        "category": "indexing",
+        "difficulty": "easy",
+        "has_citations": false
+      }
+    },
+    {
+      "id": "eval-008",
+      "question": "What is token-aware chunking and why does it prefer sentence boundaries?",
+      "ground_truth_answer": "Token-aware chunking bounds chunks by token limits while splitting at semantic sentence boundaries, preserving coherent syntax and preventing mid-sentence information fragmentation.",
+      "expected_doc_ids": [
+        "doc-chunking"
+      ],
+      "expected_chunk_ids": [
+        "chunk-chunking-01"
+      ],
+      "metadata": {
+        "category": "chunking",
+        "difficulty": "medium",
+        "has_citations": true
+      }
+    },
+    {
+      "id": "eval-009",
+      "question": "What metadata filtering operators does SignalRAG support for narrowing candidate pools?",
+      "ground_truth_answer": "SignalRAG supports operators including $eq, $ne, $in, $nin, $gt, $gte, $lt, $lte, $contains, $and, and $or across arbitrary metadata fields.",
+      "expected_doc_ids": [
+        "doc-metadata-filter"
+      ],
+      "expected_chunk_ids": [
+        "chunk-filter-01"
+      ],
+      "metadata": {
+        "category": "retrieval",
+        "difficulty": "medium",
+        "has_citations": true
+      }
+    },
+    {
+      "id": "eval-010",
+      "question": "How does query rewriting assist in resolving informal or conversational user questions?",
+      "ground_truth_answer": "Query rewriting removes conversational filler, expands abbreviations and domain acronyms, and generates focused keyword expansions optimized for vector and BM25 retrievers.",
+      "expected_doc_ids": [
+        "doc-query-rewriting"
+      ],
+      "expected_chunk_ids": [
+        "chunk-rewriter-01"
+      ],
+      "metadata": {
+        "category": "retrieval",
+        "difficulty": "easy",
+        "has_citations": false
+      }
+    },
+    {
+      "id": "eval-011",
+      "question": "What is the difference between extractive and generative RAG response synthesis?",
+      "ground_truth_answer": "Extractive RAG selects and compiles verbatim spans from source passages, whereas generative RAG synthesizes coherent natural language answers while maintaining strict citation grounding.",
+      "expected_doc_ids": [
+        "doc-rag-synthesis"
+      ],
+      "expected_chunk_ids": [
+        "chunk-synthesis-01"
+      ],
+      "metadata": {
+        "category": "generation",
+        "difficulty": "medium",
+        "has_citations": true
+      }
+    },
+    {
+      "id": "eval-012",
+      "question": "Why is normalized cosine similarity preferred over dot product for unnormalized embeddings?",
+      "ground_truth_answer": "Cosine similarity normalizes vectors by their Euclidean norm (L2 length), preventing longer chunks with larger embedding magnitudes from artificially dominating retrieval scores.",
+      "expected_doc_ids": [
+        "doc-vector-math"
+      ],
+      "expected_chunk_ids": [
+        "chunk-math-01"
+      ],
+      "metadata": {
+        "category": "indexing",
+        "difficulty": "easy",
+        "has_citations": false
+      }
+    },
+    {
+      "id": "eval-013",
+      "question": "How does streaming response delivery benefit interactive RAG user experiences?",
+      "ground_truth_answer": "Streaming delivers generated tokens incrementally as they are synthesized, dramatically decreasing perceived time-to-first-token (TTFT) latency for human users.",
+      "expected_doc_ids": [
+        "doc-streaming"
+      ],
+      "expected_chunk_ids": [
+        "chunk-streaming-01"
+      ],
+      "metadata": {
+        "category": "generation",
+        "difficulty": "easy",
+        "has_citations": false
+      }
+    },
+    {
+      "id": "eval-014",
+      "question": "What happens when an ingested document contains corrupted PDF structure or empty pages?",
+      "ground_truth_answer": "The PDF parsing pipeline catches syntax errors gracefully, logs parsing warnings, filters zero-character pages, and extracts structured text without halting the ingestion batch.",
+      "expected_doc_ids": [
+        "doc-pdf-pipeline"
+      ],
+      "expected_chunk_ids": [
+        "chunk-pdf-01"
+      ],
+      "metadata": {
+        "category": "ingestion",
+        "difficulty": "medium",
+        "has_citations": false
+      }
+    },
+    {
+      "id": "eval-015",
+      "question": "Why is BM25Plus preferred over standard BM25Okapi for short benchmark corpora?",
+      "ground_truth_answer": "Standard BM25Okapi can assign negative IDF weights to terms that appear in more than half of the corpus documents, whereas BM25Plus incorporates a lower-bound delta to ensure strictly non-negative scores.",
+      "expected_doc_ids": [
+        "doc-bm25-theory"
+      ],
+      "expected_chunk_ids": [
+        "chunk-bm25-02"
+      ],
+      "metadata": {
+        "category": "retrieval",
+        "difficulty": "hard",
+        "has_citations": true
+      }
+    }
+  ]
+}

@@ -67,13 +67,19 @@ class DirectoryLoader(BaseLoader):
             if part.startswith(".") and part != ".":
                 return True
         for pattern in self.exclude_patterns:
-            if path.match(pattern) or any(part.startswith(pattern.rstrip("*")) for part in path.parts):
+            if path.match(pattern) or any(
+                part.startswith(pattern.rstrip("*")) for part in path.parts
+            ):
                 return True
         return False
 
     def lazy_load(self) -> Iterator[Document]:
         """Iterate through directory files and yield parsed documents."""
-        paths = self.directory_path.rglob(self.glob_pattern) if self.recursive else self.directory_path.glob(self.glob_pattern)
+        paths = (
+            self.directory_path.rglob(self.glob_pattern)
+            if self.recursive
+            else self.directory_path.glob(self.glob_pattern)
+        )
 
         for path in sorted(paths):
             if not path.is_file() or self._should_exclude(path):

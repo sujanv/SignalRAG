@@ -14,9 +14,16 @@ def hybrid_setup():
     emb_service = DeterministicHashEmbeddingService(dimension=64)
 
     # c1 has exact identifier 'ERR_502_BAD_GATEWAY' (favors BM25)
-    c1 = Chunk.create("d1", 0, "Server response failure code ERR_502_BAD_GATEWAY downstream upstream proxy.", "proxy.txt")
+    c1 = Chunk.create(
+        "d1",
+        0,
+        "Server response failure code ERR_502_BAD_GATEWAY downstream upstream proxy.",
+        "proxy.txt",
+    )
     # c2 has semantic paraphrasing of networking and latency (favors Semantic)
-    c2 = Chunk.create("d2", 0, "Network transmission bottlenecks and packet roundtrip delay issues.", "net.txt")
+    c2 = Chunk.create(
+        "d2", 0, "Network transmission bottlenecks and packet roundtrip delay issues.", "net.txt"
+    )
     # c3 is unrelated
     c3 = Chunk.create("d3", 0, "Baking bread with yeast and whole wheat grain flour.", "recipe.txt")
 

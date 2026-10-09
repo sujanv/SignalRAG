@@ -4,7 +4,7 @@ import hashlib
 import uuid
 from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 class ChunkMetadata(BaseModel):
@@ -29,6 +29,32 @@ class Chunk(BaseModel):
     text: str
     metadata: ChunkMetadata
     embedding: list[float] | None = None
+
+    @property
+    def chunk_id(self) -> str:
+        """Alias for id."""
+        return self.id
+
+    @property
+    def content(self) -> str:
+        """Alias for text."""
+        return self.text
+
+    @model_validator(mode="before")
+    @classmethod
+    def _remap_chunk_fields(cls, data: Any) -> Any:
+        if isinstance(data, dict):
+            if "chunk_id" in data and "id" not in data:
+                data["id"] = data.pop("chunk_id")
+            if "content" in data and "text" not in data:
+                data["text"] = data.pop("content")
+            if "metadata" not in data:
+                data["metadata"] = ChunkMetadata(
+                    document_id=data.get("document_id", "doc_default"),
+                    chunk_index=data.get("index", 0),
+                    source=data.get("source", "source"),
+                )
+        return data
 
     @classmethod
     def create(

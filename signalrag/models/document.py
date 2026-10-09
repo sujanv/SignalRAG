@@ -5,7 +5,7 @@ import uuid
 from datetime import UTC, datetime
 from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 class DocumentMetadata(BaseModel):
@@ -29,6 +29,32 @@ class Document(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     text: str
     metadata: DocumentMetadata
+
+    @property
+    def document_id(self) -> str:
+        """Alias for id."""
+        return self.id
+
+    @property
+    def content(self) -> str:
+        """Alias for text."""
+        return self.text
+
+    @model_validator(mode="before")
+    @classmethod
+    def _remap_doc_fields(cls, data: Any) -> Any:
+        if isinstance(data, dict):
+            if "document_id" in data and "id" not in data:
+                data["id"] = data.pop("document_id")
+            if "content" in data and "text" not in data:
+                data["text"] = data.pop("content")
+            if "metadata" not in data:
+                data["metadata"] = DocumentMetadata(
+                    source=data.get("source", "source"),
+                    file_name=data.get("file_name", "doc"),
+                    extra=data.get("extra", {}),
+                )
+        return data
 
     @classmethod
     def from_text(

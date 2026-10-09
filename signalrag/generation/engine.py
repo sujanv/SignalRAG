@@ -74,7 +74,9 @@ class SignalRAGEngine:
         sufficiency = self.guardrail.check_context_sufficiency(question, results)
         if sufficiency < self.guardrail.min_context_score:
             eval_refusal = GuardrailEvaluation(
-                status=self.guardrail.evaluate(question, results, TrackedAnswer(raw_text="", cleaned_text="")).status,
+                status=self.guardrail.evaluate(
+                    question, results, TrackedAnswer(raw_text="", cleaned_text="")
+                ).status,
                 groundedness_score=0.0,
                 context_sufficiency_score=sufficiency,
                 reason="Insufficient context retrieved to answer the question reliably.",
@@ -126,6 +128,7 @@ class SignalRAGEngine:
         compress: bool = False,
     ) -> StreamingRAGResponse:
         """Stream generated response tokens, followed by citations and guardrail status."""
+
         def _generator() -> Iterator[StreamEvent]:
             # 1. Retrieve
             pipe_response = self.retrieval_pipeline.retrieve_with_trace(
@@ -138,7 +141,9 @@ class SignalRAGEngine:
             results = pipe_response.results
             trace = pipe_response.trace
 
-            yield StreamEvent(event_type="trace", data={"raw_query": trace.raw_query, "candidates": len(results)})
+            yield StreamEvent(
+                event_type="trace", data={"raw_query": trace.raw_query, "candidates": len(results)}
+            )
 
             # 2. Check sufficiency
             sufficiency = self.guardrail.check_context_sufficiency(question, results)
@@ -158,7 +163,9 @@ class SignalRAGEngine:
             sys_prompt, user_prompt = format_rag_prompt(question, results)
             accumulated_tokens: list[str] = []
 
-            for token in self.llm_client.stream_generate(prompt=user_prompt, system_prompt=sys_prompt):
+            for token in self.llm_client.stream_generate(
+                prompt=user_prompt, system_prompt=sys_prompt
+            ):
                 accumulated_tokens.append(token)
                 yield StreamEvent(event_type="token", data=token)
 
@@ -170,7 +177,10 @@ class SignalRAGEngine:
 
             yield StreamEvent(
                 event_type="guardrail",
-                data={"status": guard_eval.status.value, "groundedness": guard_eval.groundedness_score},
+                data={
+                    "status": guard_eval.status.value,
+                    "groundedness": guard_eval.groundedness_score,
+                },
             )
             yield StreamEvent(
                 event_type="citation",

@@ -11,7 +11,9 @@ from signalrag.models.document import Document, DocumentMetadata
 class TextLoader(BaseFileLoader):
     """Loads plain text, markdown, or code files from local filesystem."""
 
-    def __init__(self, file_path: str | Path, encoding: str = "utf-8", autodetect_title: bool = True) -> None:
+    def __init__(
+        self, file_path: str | Path, encoding: str = "utf-8", autodetect_title: bool = True
+    ) -> None:
         super().__init__(file_path)
         self.encoding = encoding
         self.autodetect_title = autodetect_title

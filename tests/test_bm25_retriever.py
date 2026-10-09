@@ -5,9 +5,15 @@ from signalrag.retrieval import BM25Retriever
 
 
 def test_bm25_exact_keyword_matching():
-    c1 = Chunk.create("d1", 0, "Error code ERR_AUTH_403 indicates permission denied on access key.", "errors.txt")
-    c2 = Chunk.create("d2", 0, "Database connection pool timeout waiting for available connections.", "db.txt")
-    c3 = Chunk.create("d3", 0, "Authentication tokens expire after 24 hours of inactivity.", "auth.txt")
+    c1 = Chunk.create(
+        "d1", 0, "Error code ERR_AUTH_403 indicates permission denied on access key.", "errors.txt"
+    )
+    c2 = Chunk.create(
+        "d2", 0, "Database connection pool timeout waiting for available connections.", "db.txt"
+    )
+    c3 = Chunk.create(
+        "d3", 0, "Authentication tokens expire after 24 hours of inactivity.", "auth.txt"
+    )
 
     retriever = BM25Retriever(chunks=[c1, c2, c3])
 

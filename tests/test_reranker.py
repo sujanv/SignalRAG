@@ -7,7 +7,9 @@ from signalrag.retrieval import CrossEncoderReranker, HeuristicCrossReranker
 
 def test_heuristic_reranker_promotes_exact_matches():
     # c1 is a partial match that scored high in first stage
-    c1 = Chunk.create("d1", 0, "General information about algorithms and computer science principles.", "cs.txt")
+    c1 = Chunk.create(
+        "d1", 0, "General information about algorithms and computer science principles.", "cs.txt"
+    )
     # c2 contains exact phrase match and section title match
     c2 = Chunk.create(
         "d2",

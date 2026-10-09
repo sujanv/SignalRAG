@@ -27,7 +27,9 @@ def complex_corpus_dir(tmp_path: Path) -> Path:
     # 2. Valid nested text file
     sub_dir = corpus / "research"
     sub_dir.mkdir()
-    (sub_dir / "notes.txt").write_text("Notes on hybrid retrieval and BM25 indexing.", encoding="utf-8")
+    (sub_dir / "notes.txt").write_text(
+        "Notes on hybrid retrieval and BM25 indexing.", encoding="utf-8"
+    )
 
     # 3. Valid PDF file
     pdf_path = sub_dir / "paper.pdf"

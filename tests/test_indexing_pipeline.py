@@ -20,12 +20,14 @@ def test_indexing_pipeline_documents():
     )
 
     doc1 = Document.from_text(
-        text="# Neural Attention Models\nTransformers use multi-head self-attention mechanisms to encode sequence relations. " * 3,
+        text="# Neural Attention Models\nTransformers use multi-head self-attention mechanisms to encode sequence relations. "
+        * 3,
         source="doc1.md",
         title="Attention Models",
     )
     doc2 = Document.from_text(
-        text="# Italian Cooking\nTraditional Neapolitan pizza dough is fermented slowly with double-zero flour. " * 3,
+        text="# Italian Cooking\nTraditional Neapolitan pizza dough is fermented slowly with double-zero flour. "
+        * 3,
         source="doc2.md",
         title="Pizza Guide",
     )

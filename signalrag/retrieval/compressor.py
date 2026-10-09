@@ -40,7 +40,9 @@ class SentenceRelevanceCompressor(BaseContextCompressor):
         min_sentence_score: float = 0.15,
         max_sentences_per_chunk: int = 4,
     ) -> None:
-        self.embedding_service = embedding_service or DeterministicHashEmbeddingService(dimension=64)
+        self.embedding_service = embedding_service or DeterministicHashEmbeddingService(
+            dimension=64
+        )
         self.min_sentence_score = min_sentence_score
         self.max_sentences_per_chunk = max_sentences_per_chunk
 

@@ -33,7 +33,9 @@ class BaseChunker(ABC):
         metadata_extractor: ChunkMetadataExtractor | None = None,
     ) -> None:
         if chunk_overlap >= chunk_size:
-            raise ValueError(f"chunk_overlap ({chunk_overlap}) must be strictly less than chunk_size ({chunk_size})")
+            raise ValueError(
+                f"chunk_overlap ({chunk_overlap}) must be strictly less than chunk_size ({chunk_size})"
+            )
         self.chunk_size = chunk_size
         self.chunk_overlap = chunk_overlap
         self.min_chunk_size = min_chunk_size
@@ -75,7 +77,9 @@ class BaseChunker(ABC):
                 token_count=token_count,
             )
 
-            chunk_id = hashlib.sha256(f"{document.id}:{idx}:{chunk_text_stripped}".encode()).hexdigest()[:16]
+            chunk_id = hashlib.sha256(
+                f"{document.id}:{idx}:{chunk_text_stripped}".encode()
+            ).hexdigest()[:16]
             chunk = Chunk(
                 id=chunk_id,
                 document_id=document.id,

@@ -63,7 +63,13 @@ class MockLLMClient(BaseLLMClient):
         question = q_match.group(1).strip() if q_match else ""
 
         # Extract reference blocks: [1] Source: ... \n <text>
-        doc_matches = list(re.finditer(r"\[(\d+)\]\s*Source:[^\n]*\n(.*?)(?=(?:\[\d+\]\s*Source:)|----------------|$)", prompt, re.DOTALL))
+        doc_matches = list(
+            re.finditer(
+                r"\[(\d+)\]\s*Source:[^\n]*\n(.*?)(?=(?:\[\d+\]\s*Source:)|----------------|$)",
+                prompt,
+                re.DOTALL,
+            )
+        )
 
         if not doc_matches or not question:
             yield "I cannot find sufficient evidence in the provided documents to answer this question."

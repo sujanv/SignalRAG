@@ -44,9 +44,11 @@ class TokenChunker(BaseChunker):
             chunk_overlap=chunk_overlap,
             min_chunk_size=min_chunk_size,
             metadata_extractor=metadata_extractor,
-            length_function=lambda t: len(self.tokenizer.encode(t, disallowed_special=()))
-            if hasattr(self.tokenizer, "encode")
-            else len(t.split()),
+            length_function=lambda t: (
+                len(self.tokenizer.encode(t, disallowed_special=()))
+                if hasattr(self.tokenizer, "encode")
+                else len(t.split())
+            ),
         )
 
     def chunk_text(self, text: str) -> list[str]:

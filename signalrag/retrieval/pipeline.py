@@ -95,7 +95,9 @@ class RetrievalPipeline(BaseRetriever):
         # 2. Hybrid Retrieval Stage (BM25 + Semantic)
         t1 = time.perf_counter()
         candidate_k = top_k * 3
-        candidates = self.hybrid_retriever.retrieve(effective_query, top_k=candidate_k, filters=filters)
+        candidates = self.hybrid_retriever.retrieve(
+            effective_query, top_k=candidate_k, filters=filters
+        )
         trace.hybrid_candidates_count = len(candidates)
         trace.stages_latency_ms["hybrid_retrieval"] = round((time.perf_counter() - t1) * 1000, 2)
 

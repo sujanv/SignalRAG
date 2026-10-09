@@ -10,7 +10,9 @@ def test_semantic_retriever_ranking():
     store = MemoryVectorStore()
     embedding_service = DeterministicHashEmbeddingService(dimension=64)
 
-    c1 = Chunk.create("d1", 0, "Transformer models and attention mechanisms in deep learning", "ml.txt")
+    c1 = Chunk.create(
+        "d1", 0, "Transformer models and attention mechanisms in deep learning", "ml.txt"
+    )
     c2 = Chunk.create("d2", 0, "Computer vision convolution algorithms and image filters", "cv.txt")
     c3 = Chunk.create("d3", 0, "French cuisine recipe with butter and shallots", "food.txt")
 

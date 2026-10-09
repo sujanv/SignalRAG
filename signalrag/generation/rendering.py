@@ -16,7 +16,7 @@ class CitationRenderer:
 
         if include_quote and citation.quote:
             clean_quote = citation.quote.replace("\n", " ").strip()
-            return f"{header}\n    > \"{clean_quote}\""
+            return f'{header}\n    > "{clean_quote}"'
         return header
 
     @classmethod
@@ -68,17 +68,21 @@ class CitationRenderer:
         html_body = re.sub(r"\[(\d+(?:\s*,\s*\d+)*)\]", _replace_anchor, text)
 
         if not tracked_answer.citations:
-            return f"<div class=\"signalrag-answer\">{html_body}</div>"
+            return f'<div class="signalrag-answer">{html_body}</div>'
 
         cite_items = []
         for c in tracked_answer.citations:
             page_info = f", p. {c.page_number}" if c.page_number else ""
             sec_info = f" ({html.escape(c.section_title)})" if c.section_title else ""
             src = html.escape(c.source)
-            quote_html = f'<blockquote class="citation-quote">"{html.escape(c.quote)}"</blockquote>' if c.quote else ""
+            quote_html = (
+                f'<blockquote class="citation-quote">"{html.escape(c.quote)}"</blockquote>'
+                if c.quote
+                else ""
+            )
             cite_items.append(
                 f'<li id="cite-{c.index}">'
-                f'<strong>[{c.index}]</strong> {src}{page_info}{sec_info}'
+                f"<strong>[{c.index}]</strong> {src}{page_info}{sec_info}"
                 f"{quote_html}</li>"
             )
 

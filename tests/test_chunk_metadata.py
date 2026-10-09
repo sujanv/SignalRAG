@@ -9,7 +9,8 @@ def test_chunk_metadata_section_and_hierarchy():
         "# System Architecture\n\n"
         "SignalRAG is built as a modular retrieval and generation system.\n\n"
         "## Vector Indexing\n\n"
-        "The vector indexing pipeline converts parsed documents into chunks and embeddings. " * 5
+        "The vector indexing pipeline converts parsed documents into chunks and embeddings. "
+        * 5
         + "\n\n"
         + "## Hybrid Search\n\n"
         "Hybrid search merges sparse lexical scores with dense embedding cosine similarities. " * 5
@@ -54,7 +55,9 @@ def test_chunk_metadata_page_boundary_tracking():
     )
 
     extractor = ChunkMetadataExtractor(track_pages=True)
-    chunker = RecursiveCharacterChunker(chunk_size=100, chunk_overlap=20, min_chunk_size=20, metadata_extractor=extractor)
+    chunker = RecursiveCharacterChunker(
+        chunk_size=100, chunk_overlap=20, min_chunk_size=20, metadata_extractor=extractor
+    )
     chunks = chunker.chunk_document(doc)
 
     assert len(chunks) >= 2

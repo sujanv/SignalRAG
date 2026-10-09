@@ -30,7 +30,9 @@ class GuardrailEvaluation:
 class GroundedAnswerGuardrail:
     """Guardrail inspecting retrieved context sufficiency and answer groundedness."""
 
-    STANDARD_REFUSAL = "I cannot find sufficient evidence in the provided documents to answer this question."
+    STANDARD_REFUSAL = (
+        "I cannot find sufficient evidence in the provided documents to answer this question."
+    )
 
     REFUSAL_PATTERNS = [
         r"cannot find sufficient evidence",
@@ -117,7 +119,9 @@ class GroundedAnswerGuardrail:
             overlap = matched / max(1, len([w for w in claim_words if len(w) > 2]))
             claim_scores.append(overlap)
 
-        groundedness = round(sum(claim_scores) / max(1, len(claim_scores)), 4) if claim_scores else 0.5
+        groundedness = (
+            round(sum(claim_scores) / max(1, len(claim_scores)), 4) if claim_scores else 0.5
+        )
 
         if groundedness < self.min_groundedness_score:
             # Partially grounded answer - qualify response

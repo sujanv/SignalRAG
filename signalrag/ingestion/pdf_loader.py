@@ -107,7 +107,9 @@ class PDFLoader(BaseFileLoader):
             # Yield one Document per page
             for page_num, text in pages_text.items():
                 content_hash = hashlib.sha256(text.encode("utf-8")).hexdigest()
-                page_doc_id = hashlib.sha256(f"{self.file_path}:{page_num}:{content_hash}".encode()).hexdigest()[:16]
+                page_doc_id = hashlib.sha256(
+                    f"{self.file_path}:{page_num}:{content_hash}".encode()
+                ).hexdigest()[:16]
 
                 metadata = DocumentMetadata(
                     source=str(self.file_path),

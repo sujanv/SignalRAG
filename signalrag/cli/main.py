@@ -28,9 +28,15 @@ def version() -> None:
 @app.command()
 def ingest(
     path: Annotated[Path, typer.Argument(help="Path to document file or directory to ingest.")],
-    recursive: Annotated[bool, typer.Option("--recursive", "-r", help="Recursively search directory.")] = True,
-    page_mode: Annotated[bool, typer.Option("--page-mode", help="Split PDFs into individual page documents.")] = False,
-    silent_errors: Annotated[bool, typer.Option("--silent-errors", help="Skip corrupted or unreadable files.")] = False,
+    recursive: Annotated[
+        bool, typer.Option("--recursive", "-r", help="Recursively search directory.")
+    ] = True,
+    page_mode: Annotated[
+        bool, typer.Option("--page-mode", help="Split PDFs into individual page documents.")
+    ] = False,
+    silent_errors: Annotated[
+        bool, typer.Option("--silent-errors", help="Skip corrupted or unreadable files.")
+    ] = False,
 ) -> None:
     """Ingest documents from a file or directory and produce structured documents."""
     if not path.exists():
@@ -68,19 +74,31 @@ def ingest(
     for doc in docs:
         pages = str(doc.metadata.total_pages or 1)
         chars = str(len(doc.text))
-        snippet = doc.metadata.title or (doc.text[:40].replace("\n", " ") + "..." if doc.text else "")
-        table.add_row(doc.id[:10], doc.metadata.file_name, doc.metadata.file_type, pages, chars, snippet)
+        snippet = doc.metadata.title or (
+            doc.text[:40].replace("\n", " ") + "..." if doc.text else ""
+        )
+        table.add_row(
+            doc.id[:10], doc.metadata.file_name, doc.metadata.file_type, pages, chars, snippet
+        )
 
     console.print(table)
-    console.print(f"[bold green]Successfully ingested {len(docs)} structured documents.[/bold green]")
+    console.print(
+        f"[bold green]Successfully ingested {len(docs)} structured documents.[/bold green]"
+    )
 
 
 @app.command()
 def index(
     path: Annotated[Path, typer.Argument(help="Path to documents to index.")],
-    recursive: Annotated[bool, typer.Option("--recursive", "-r", help="Recursively search directory.")] = True,
-    force: Annotated[bool, typer.Option("--force", "-f", help="Force reindexing of all documents.")] = False,
-    storage_dir: Annotated[Path, typer.Option("--storage-dir", help="Directory to store vector index.")] = Path("./storage/vector_store"),
+    recursive: Annotated[
+        bool, typer.Option("--recursive", "-r", help="Recursively search directory.")
+    ] = True,
+    force: Annotated[
+        bool, typer.Option("--force", "-f", help="Force reindexing of all documents.")
+    ] = False,
+    storage_dir: Annotated[
+        Path, typer.Option("--storage-dir", help="Directory to store vector index.")
+    ] = Path("./storage/vector_store"),
 ) -> None:
     """Incrementally parse, chunk, embed, and index documents."""
     if not path.exists():
@@ -126,13 +144,23 @@ def index(
 def search(
     query: Annotated[str, typer.Argument(help="Search query text.")],
     top_k: Annotated[int, typer.Option("--top-k", "-k", help="Number of results to retrieve.")] = 5,
-    hybrid: Annotated[bool, typer.Option("--hybrid/--vector-only", help="Use hybrid search (BM25 + Semantic).")] = True,
+    hybrid: Annotated[
+        bool, typer.Option("--hybrid/--vector-only", help="Use hybrid search (BM25 + Semantic).")
+    ] = True,
     rerank: Annotated[bool, typer.Option("--rerank", help="Apply second-stage reranking.")] = False,
-    compress: Annotated[bool, typer.Option("--compress", help="Compress retrieved context chunks.")] = False,
-    debug: Annotated[bool, typer.Option("--debug", "-d", help="Display diagnostic pipeline trace.")] = False,
+    compress: Annotated[
+        bool, typer.Option("--compress", help="Compress retrieved context chunks.")
+    ] = False,
+    debug: Annotated[
+        bool, typer.Option("--debug", "-d", help="Display diagnostic pipeline trace.")
+    ] = False,
     author: Annotated[str | None, typer.Option("--author", help="Filter by author.")] = None,
-    source: Annotated[str | None, typer.Option("--source", help="Filter by source substring.")] = None,
-    storage_dir: Annotated[Path, typer.Option("--storage-dir", help="Directory of vector index.")] = Path("./storage/vector_store"),
+    source: Annotated[
+        str | None, typer.Option("--source", help="Filter by source substring.")
+    ] = None,
+    storage_dir: Annotated[
+        Path, typer.Option("--storage-dir", help="Directory of vector index.")
+    ] = Path("./storage/vector_store"),
 ) -> None:
     """Search indexed documents using hybrid retrieval, reranking, and context compression."""
     from signalrag.embeddings.factory import create_embedding_service
@@ -144,7 +172,9 @@ def search(
 
     index_path = storage_dir / "index.json"
     if not index_path.exists():
-        console.print(f"[bold red]Error:[/bold red] No index found at '{index_path}'. Run `signalrag index <path>` first.")
+        console.print(
+            f"[bold red]Error:[/bold red] No index found at '{index_path}'. Run `signalrag index <path>` first."
+        )
         raise typer.Exit(code=1)
 
     vector_store = MemoryVectorStore(storage_path=index_path)
@@ -153,7 +183,9 @@ def search(
     all_chunks = list(vector_store._chunks.values())
     embedding_service = create_embedding_service()
 
-    semantic_retriever = SemanticRetriever(vector_store=vector_store, embedding_service=embedding_service)
+    semantic_retriever = SemanticRetriever(
+        vector_store=vector_store, embedding_service=embedding_service
+    )
     bm25_retriever = BM25Retriever(chunks=all_chunks)
 
     pipeline = RetrievalPipeline(
@@ -185,10 +217,26 @@ def search(
         trace_table.add_column("Latency", justify="right", style="green")
 
         trace_table.add_row("Raw Query", trace.raw_query, "-")
-        trace_table.add_row("Rewritten", ", ".join(trace.rewritten_queries), f"{trace.stages_latency_ms.get('query_rewrite', 0)}ms")
-        trace_table.add_row("Hybrid Pool", f"{trace.hybrid_candidates_count} candidates", f"{trace.stages_latency_ms.get('hybrid_retrieval', 0)}ms")
-        trace_table.add_row("Reranker", f"{trace.reranked_candidates_count} candidates", f"{trace.stages_latency_ms.get('reranking', 0)}ms")
-        trace_table.add_row("Compression", f"{trace.final_results_count} final", f"{trace.stages_latency_ms.get('compression', 0)}ms")
+        trace_table.add_row(
+            "Rewritten",
+            ", ".join(trace.rewritten_queries),
+            f"{trace.stages_latency_ms.get('query_rewrite', 0)}ms",
+        )
+        trace_table.add_row(
+            "Hybrid Pool",
+            f"{trace.hybrid_candidates_count} candidates",
+            f"{trace.stages_latency_ms.get('hybrid_retrieval', 0)}ms",
+        )
+        trace_table.add_row(
+            "Reranker",
+            f"{trace.reranked_candidates_count} candidates",
+            f"{trace.stages_latency_ms.get('reranking', 0)}ms",
+        )
+        trace_table.add_row(
+            "Compression",
+            f"{trace.final_results_count} final",
+            f"{trace.stages_latency_ms.get('compression', 0)}ms",
+        )
         trace_table.add_row("Total Time", "", f"[bold]{trace.total_latency_ms}ms[/bold]")
         console.print(trace_table)
 
@@ -225,9 +273,15 @@ def query(
     question: Annotated[str, typer.Argument(help="Question to ask SignalRAG.")],
     top_k: Annotated[int, typer.Option("--top-k", "-k", help="Number of chunks to retrieve.")] = 5,
     rerank: Annotated[bool, typer.Option("--rerank/--no-rerank", help="Apply reranking.")] = True,
-    compress: Annotated[bool, typer.Option("--compress/--no-compress", help="Compress retrieved context.")] = False,
-    stream: Annotated[bool, typer.Option("--stream/--no-stream", help="Stream response tokens.")] = True,
-    storage_dir: Annotated[Path, typer.Option("--storage-dir", help="Directory of vector index.")] = Path("./storage/vector_store"),
+    compress: Annotated[
+        bool, typer.Option("--compress/--no-compress", help="Compress retrieved context.")
+    ] = False,
+    stream: Annotated[
+        bool, typer.Option("--stream/--no-stream", help="Stream response tokens.")
+    ] = True,
+    storage_dir: Annotated[
+        Path, typer.Option("--storage-dir", help="Directory of vector index.")
+    ] = Path("./storage/vector_store"),
 ) -> None:
     """Ask a question and receive a grounded answer with inline citations."""
     from rich.markdown import Markdown
@@ -242,7 +296,9 @@ def query(
 
     index_path = storage_dir / "index.json"
     if not index_path.exists():
-        console.print(f"[bold red]Error:[/bold red] No index found at '{index_path}'. Run `signalrag index <path>` first.")
+        console.print(
+            f"[bold red]Error:[/bold red] No index found at '{index_path}'. Run `signalrag index <path>` first."
+        )
         raise typer.Exit(code=1)
 
     vector_store = MemoryVectorStore(storage_path=index_path)
@@ -283,7 +339,12 @@ def query(
             cite_table.add_column("Supporting Excerpt", style="yellow")
             for c in citations:
                 p = str(c.get("page_number") or "-")
-                cite_table.add_row(f"[{c.get('index')}]", Path(c.get("source", "")).name, p, c.get("quote", "")[:90] + "...")
+                cite_table.add_row(
+                    f"[{c.get('index')}]",
+                    Path(c.get("source", "")).name,
+                    p,
+                    c.get("quote", "")[:90] + "...",
+                )
             console.print(cite_table)
     else:
         resp = engine.ask(
