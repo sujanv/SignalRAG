@@ -358,3 +358,64 @@ def query(
 
 if __name__ == "__main__":
     app()
+
+
+@app.command("evaluate")
+def evaluate_benchmark(
+    dataset_path: Annotated[
+        Path, typer.Option("--dataset", "-d", help="Path to evaluation questions dataset")
+    ] = Path("eval/questions.json"),
+    config_path: Annotated[
+        Path, typer.Option("--config", "-c", help="Path to YAML configuration")
+    ] = Path("configs/default.yaml"),
+    output_path: Annotated[
+        Path | None,
+        typer.Option("--output", "-o", help="Optional path to write evaluation results JSON"),
+    ] = None,
+    limit: Annotated[
+        int | None, typer.Option("--limit", "-n", help="Optional max questions to evaluate")
+    ] = None,
+    top_k: Annotated[
+        int, typer.Option("--top-k", "-k", help="Number of retrieved chunks per query")
+    ] = 5,
+) -> None:
+    """Run full benchmark evaluation on a test dataset."""
+    from signalrag.core.config import load_config
+    from signalrag.evaluation.dataset import EvaluationDataset
+    from signalrag.evaluation.runner import EvaluationRunner
+    from signalrag.generation.engine import RAGEngine
+
+    if not dataset_path.exists():
+        console.print(f"[bold red]Dataset not found:[/bold red] {dataset_path}")
+        raise typer.Exit(code=1)
+
+    cfg = load_config(config_path)
+    engine = RAGEngine.from_config(cfg)
+    dataset = EvaluationDataset.from_json(dataset_path)
+
+    console.print(
+        f"[bold cyan]Running SignalRAG Evaluation on {len(dataset)} questions...[/bold cyan]"
+    )
+    runner = EvaluationRunner(engine=engine)
+    report = runner.evaluate(dataset=dataset, top_k=top_k, limit=limit)
+
+    console.print("\n[bold green]SignalRAG Evaluation[/bold green]")
+    console.print("────────────────────────────────")
+    console.print("[bold]Retrieval[/bold]")
+    console.print(f"  Recall@5             {report.retrieval_metrics.recall_at_5 * 100:.1f}%")
+    console.print(f"  Recall@10            {report.retrieval_metrics.recall_at_10 * 100:.1f}%")
+    console.print(f"  MRR                   {report.retrieval_metrics.mrr:.2f}")
+    console.print(f"  NDCG@10               {report.retrieval_metrics.ndcg_at_10:.2f}")
+    console.print("\n[bold]Generation[/bold]")
+    console.print(f"  Faithfulness          {report.avg_faithfulness * 100:.1f}%")
+    console.print(f"  Answer Relevance      {report.avg_answer_relevance * 100:.1f}%")
+    console.print("\n[bold]Performance[/bold]")
+    console.print(f"  P50 latency           {report.latency.p50_s:.1f}s")
+    console.print(f"  P95 latency           {report.latency.p95_s:.1f}s")
+    console.print(f"  Avg latency           {report.latency.avg_s:.1f}s")
+    console.print("────────────────────────────────")
+    console.print(f"Evaluation: {report.total_examples} questions\n")
+
+    if output_path:
+        report.to_json(output_path)
+        console.print(f"[green]Saved evaluation report to {output_path}[/green]")

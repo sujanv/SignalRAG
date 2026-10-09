@@ -196,3 +196,40 @@ class SignalRAGEngine:
             )
 
         return StreamingRAGResponse(_generator())
+
+    def query(
+        self,
+        question: str,
+        top_k: int = 5,
+        filters: dict[str, Any] | None = None,
+        rerank: bool = True,
+        compress: bool = False,
+    ) -> RAGResponse:
+        """Alias for ask() to provide standard RAG engine query interface."""
+        return self.ask(question, top_k=top_k, filters=filters, rerank=rerank, compress=compress)
+
+    @classmethod
+    def from_config(cls, config=None) -> "SignalRAGEngine":
+        """Factory method building a full engine from config."""
+        from signalrag.embeddings.factory import create_embedding_service
+        from signalrag.indexing.memory_store import MemoryVectorStore
+        from signalrag.indexing.pipeline import IndexingPipeline
+        from signalrag.retrieval.bm25 import BM25Retriever
+        from signalrag.retrieval.pipeline import RetrievalPipeline
+        from signalrag.retrieval.semantic import SemanticRetriever
+
+        vector_store = MemoryVectorStore()
+        embedding_service = create_embedding_service()
+        indexing_pipeline = IndexingPipeline(
+            vector_store=vector_store, embedding_service=embedding_service
+        )
+        semantic = SemanticRetriever(vector_store=vector_store, embedding_service=embedding_service)
+        bm25 = BM25Retriever(chunks=[])
+        pipeline = RetrievalPipeline(semantic_retriever=semantic, bm25_retriever=bm25)
+
+        engine = cls(retrieval_pipeline=pipeline)
+        engine.indexing_pipeline = indexing_pipeline
+        return engine
+
+
+RAGEngine = SignalRAGEngine
