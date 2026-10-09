@@ -174,3 +174,11 @@ def get_web_ui() -> HTMLResponse:
     return HTMLResponse(
         content="<html><body><h1>SignalRAG</h1><p>Ask a question...</p><div id='sourcesList'>Sources & Citations</div></body></html>"
     )
+
+
+@app.get("/metrics", tags=["System"])
+def get_metrics() -> dict[str, Any]:
+    """Export operational latency and token usage metrics."""
+    from signalrag.core.observability import global_metrics
+
+    return global_metrics.get_summary()
