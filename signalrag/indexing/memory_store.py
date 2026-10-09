@@ -23,6 +23,12 @@ class MemoryVectorStore(BaseVectorStore):
     def count(self) -> int:
         return len(self._chunks)
 
+    def __len__(self) -> int:
+        return len(self._chunks)
+
+    def __bool__(self) -> bool:
+        return True
+
     def get_chunk(self, chunk_id: str) -> Chunk | None:
         return self._chunks.get(chunk_id)
 

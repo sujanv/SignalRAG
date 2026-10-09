@@ -600,3 +600,17 @@ def compare_runs(
 
     comp = compare_experiments(exp_a, exp_b)
     render_comparison_table(comp, console=console)
+
+
+@app.command("serve")
+def serve_api(
+    host: Annotated[str, typer.Option("--host", "-h", help="Bind host")] = "127.0.0.1",
+    port: Annotated[int, typer.Option("--port", "-p", help="Bind port")] = 8000,
+    reload: Annotated[bool, typer.Option("--reload", help="Enable auto-reload")] = False,
+) -> None:
+    """Launch SignalRAG FastAPI server with OpenAPI documentation."""
+    import uvicorn
+
+    console.print(f"[bold green]Starting SignalRAG API at http://{host}:{port}[/bold green]")
+    console.print(f"OpenAPI Documentation: http://{host}:{port}/docs")
+    uvicorn.run("signalrag.api.app:app", host=host, port=port, reload=reload)
