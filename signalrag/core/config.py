@@ -15,6 +15,15 @@ class LLMConfig(BaseModel):
     provider: Literal["openai", "anthropic", "ollama", "gemini", "mock"] = "openai"
     model: str = "gpt-4o-mini"
     api_key: str | None = None
+
+    @property
+    def dimensions(self) -> int:
+        return self.dimension
+
+    @dimensions.setter
+    def dimensions(self, val: int) -> None:
+        self.dimension = val
+
     base_url: str | None = None
     temperature: float = Field(default=0.0, ge=0.0, le=2.0)
     max_tokens: int = Field(default=1024, gt=0)
@@ -24,11 +33,19 @@ class LLMConfig(BaseModel):
 class EmbeddingConfig(BaseModel):
     """Configuration for embedding generation."""
 
-    provider: Literal["local", "fastembed", "openai", "mock"] = "local"
+    provider: Literal["local", "fastembed", "openai", "mock", "hash"] = "local"
     model: str = "all-MiniLM-L6-v2"
     dimension: int = Field(default=384, gt=0)
     batch_size: int = Field(default=32, gt=0)
     api_key: str | None = None
+
+    @property
+    def dimensions(self) -> int:
+        return self.dimension
+
+    @dimensions.setter
+    def dimensions(self, val: int) -> None:
+        self.dimension = val
 
 
 class VectorStoreConfig(BaseModel):
@@ -104,6 +121,10 @@ class Settings(BaseSettings):
     retrieval: RetrievalConfig = Field(default_factory=RetrievalConfig)
     evaluation: EvaluationConfig = Field(default_factory=EvaluationConfig)
 
+    @property
+    def embeddings(self) -> EmbeddingConfig:
+        return self.embedding
+
     @classmethod
     def from_yaml(cls, yaml_path: str | Path) -> "Settings":
         """Load settings from a YAML configuration file."""
@@ -131,3 +152,7 @@ class Settings(BaseSettings):
 def get_settings() -> Settings:
     """Get cached application settings."""
     return Settings()
+
+
+SignalRAGConfig = Settings
+load_config = Settings.from_yaml

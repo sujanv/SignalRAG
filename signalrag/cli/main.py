@@ -517,3 +517,27 @@ def show_dashboard(
 
     render_evaluation_dashboard(target_run.report, console)
     render_failures_table(target_run.report, console)
+
+
+@app.command("debug")
+def debug_retrieval(
+    query_text: Annotated[str, typer.Argument(help="Query to run through retrieval debugger")],
+    config_path: Annotated[
+        Path,
+        typer.Option("--config", "-c", help="Path to YAML configuration"),
+    ] = Path("configs/default.yaml"),
+    top_k: Annotated[
+        int,
+        typer.Option("--top-k", "-k", help="Top-K candidate items to return"),
+    ] = 5,
+) -> None:
+    """Inspect step-by-step retrieval stages for a query."""
+    from signalrag.core.config import load_config
+    from signalrag.generation.engine import RAGEngine
+    from signalrag.retrieval.debugger import RetrievalDebugger, render_debug_trace
+
+    cfg = load_config(config_path)
+    engine = RAGEngine.from_config(cfg)
+    debugger = RetrievalDebugger(engine.retrieval_pipeline)
+    trace = debugger.trace(query_text, top_k=top_k)
+    render_debug_trace(trace, console=console)

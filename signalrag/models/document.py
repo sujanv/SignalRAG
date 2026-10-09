@@ -54,6 +54,13 @@ class Document(BaseModel):
                     file_name=data.get("file_name", "doc"),
                     extra=data.get("extra", {}),
                 )
+            elif isinstance(data["metadata"], dict):
+                meta_dict = dict(data["metadata"])
+                if "source" not in meta_dict:
+                    meta_dict["source"] = data.get("source", "source")
+                if "file_name" not in meta_dict:
+                    meta_dict["file_name"] = data.get("file_name", "doc")
+                data["metadata"] = meta_dict
         return data
 
     @classmethod

@@ -54,6 +54,15 @@ class Chunk(BaseModel):
                     chunk_index=data.get("index", 0),
                     source=data.get("source", "source"),
                 )
+            elif isinstance(data["metadata"], dict):
+                meta_dict = dict(data["metadata"])
+                if "document_id" not in meta_dict:
+                    meta_dict["document_id"] = data.get("document_id", "doc_default")
+                if "chunk_index" not in meta_dict:
+                    meta_dict["chunk_index"] = data.get("index", 0)
+                if "source" not in meta_dict:
+                    meta_dict["source"] = data.get("source", "source")
+                data["metadata"] = meta_dict
         return data
 
     @classmethod
