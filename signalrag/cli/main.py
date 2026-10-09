@@ -541,3 +541,34 @@ def debug_retrieval(
     debugger = RetrievalDebugger(engine.retrieval_pipeline)
     trace = debugger.trace(query_text, top_k=top_k)
     render_debug_trace(trace, console=console)
+
+
+@app.command("analyze-failures")
+def analyze_failures(
+    run_id: Annotated[
+        str | None,
+        typer.Argument(help="Experiment run ID (analyzes latest if omitted)"),
+    ] = None,
+    storage_dir: Annotated[
+        Path,
+        typer.Option("--dir", "-d", help="Experiment storage directory"),
+    ] = Path("storage/experiments"),
+) -> None:
+    """Categorize and diagnose failure modes for an evaluation run."""
+    from signalrag.evaluation.failure_analysis import FailureAnalyzer, render_failure_analysis
+    from signalrag.evaluation.tracker import ExperimentTracker
+
+    tracker = ExperimentTracker(storage_dir=storage_dir)
+    runs = tracker.list_runs()
+    if not runs:
+        console.print("[yellow]No experiments found in storage/experiments[/yellow]")
+        raise typer.Exit(1)
+
+    target_run = tracker.get_run(run_id) if run_id else runs[0]
+    if not target_run:
+        console.print(f"[red]Experiment {run_id} not found[/red]")
+        raise typer.Exit(1)
+
+    analyzer = FailureAnalyzer()
+    summary = analyzer.analyze(target_run.report)
+    render_failure_analysis(summary, console=console)
