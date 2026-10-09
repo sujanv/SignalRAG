@@ -483,3 +483,37 @@ def show_experiment(
     console.print(f"Recall@5: {run.report.retrieval_metrics.recall_at_5 * 100:.1f}%")
     console.print(f"MRR: {run.report.retrieval_metrics.mrr:.2f}")
     console.print(f"Faithfulness: {run.report.avg_faithfulness * 100:.1f}%")
+
+
+@app.command("dashboard")
+def show_dashboard(
+    run_id: Annotated[
+        str | None,
+        typer.Argument(help="Optional experiment run ID (shows latest if omitted)"),
+    ] = None,
+    storage_dir: Annotated[
+        Path,
+        typer.Option("--dir", "-d", help="Experiment storage directory"),
+    ] = Path("storage/experiments"),
+) -> None:
+    """Render terminal evaluation dashboard for a benchmark run."""
+    from signalrag.evaluation.dashboard import render_evaluation_dashboard, render_failures_table
+    from signalrag.evaluation.tracker import ExperimentTracker
+
+    tracker = ExperimentTracker(storage_dir=storage_dir)
+    runs = tracker.list_runs()
+    if not runs:
+        console.print("[yellow]No experiments recorded yet in storage/experiments[/yellow]")
+        raise typer.Exit(1)
+
+    target_run = None
+    if run_id:
+        target_run = tracker.get_run(run_id)
+        if not target_run:
+            console.print(f"[red]Experiment {run_id} not found.[/red]")
+            raise typer.Exit(1)
+    else:
+        target_run = runs[0]
+
+    render_evaluation_dashboard(target_run.report, console)
+    render_failures_table(target_run.report, console)
