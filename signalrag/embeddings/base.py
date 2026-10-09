@@ -51,3 +51,7 @@ class BaseEmbeddingService(ABC):
             chunk.embedding = emb
 
         return chunks
+
+
+# Backward compatibility alias
+EmbeddingService = BaseEmbeddingService
