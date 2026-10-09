@@ -1,0 +1,23 @@
+version: "3.8"
+
+services:
+  signalrag:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: signalrag-api
+    ports:
+      - "8000:8000"
+    environment:
+      - SIGNALRAG_ENV=production
+      - SIGNALRAG_EMBEDDINGS__PROVIDER=hash
+      - SIGNALRAG_RETRIEVAL__TOP_K=5
+    volumes:
+      - ./data:/app/data
+      - ./storage:/app/storage
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
