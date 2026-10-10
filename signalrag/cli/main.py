@@ -654,3 +654,52 @@ def multihop_query(
             f"  [{idx}] Chunk {r.chunk.id} (Doc: {r.chunk.document_id}) - Score: {r.score:.3f}"
         )
         console.print(f"      [dim]{r.chunk.text[:120]}...[/dim]")
+
+
+@app.command("generate-eval")
+def generate_eval(
+    docs_dir: Annotated[
+        Path,
+        typer.Option("--docs", "-d", help="Directory of documents to ingest and synthesize from"),
+    ] = Path("data/samples"),
+    output_path: Annotated[
+        Path,
+        typer.Option("--output", "-o", help="Output path for evaluation JSON dataset"),
+    ] = Path("eval/synthetic_eval.json"),
+    max_count: Annotated[
+        int,
+        typer.Option("--count", "-n", help="Maximum evaluation pairs to generate"),
+    ] = 10,
+) -> None:
+    """Generate synthetic evaluation question-answer dataset from local corpus."""
+    from signalrag.chunking.recursive import RecursiveCharacterChunker
+    from signalrag.evaluation.synthetic import SyntheticDatasetGenerator
+    from signalrag.ingestion.directory_loader import DirectoryLoader
+
+    loader = DirectoryLoader(docs_dir)
+    docs = loader.load()
+    if not docs:
+        console.print(
+            f"[yellow]No documents found in {docs_dir}. Generating fallback sample dataset...[/yellow]"
+        )
+        from signalrag.models.document import Document
+
+        docs = [
+            Document(
+                id="doc_demo",
+                text="SignalRAG provides hybrid retrieval combining dense vector embeddings and BM25 lexical ranking.",
+                metadata={"source": "demo.txt"},
+            )
+        ]
+
+    chunker = RecursiveCharacterChunker(chunk_size=300, chunk_overlap=30)
+    all_chunks = []
+    for d in docs:
+        all_chunks.extend(chunker.chunk(d))
+
+    generator = SyntheticDatasetGenerator()
+    dataset = generator.generate_from_chunks(all_chunks, max_examples=max_count)
+    dataset.to_json(output_path)
+    console.print(
+        f"[bold green]Successfully generated {len(dataset)} synthetic evaluation examples into {output_path}![/bold green]"
+    )
