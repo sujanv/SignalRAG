@@ -7,6 +7,13 @@ from signalrag.retrieval.compressor import (
     SentenceRelevanceCompressor,
     split_sentences,
 )
+from signalrag.retrieval.decomposer import (
+    MultiHopRetriever,
+    MultiHopTrace,
+    QueryDecomposer,
+    QueryDecompositionPlan,
+    SubQuery,
+)
 from signalrag.retrieval.filter import MetadataFilter
 from signalrag.retrieval.hybrid import HybridRetriever
 from signalrag.retrieval.pipeline import (
@@ -44,4 +51,9 @@ __all__ = [
     "RetrievalPipeline",
     "RetrievalTrace",
     "PipelineRetrievalResponse",
+    "QueryDecomposer",
+    "MultiHopRetriever",
+    "SubQuery",
+    "QueryDecompositionPlan",
+    "MultiHopTrace",
 ]

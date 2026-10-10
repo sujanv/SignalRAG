@@ -614,3 +614,43 @@ def serve_api(
     console.print(f"[bold green]Starting SignalRAG API at http://{host}:{port}[/bold green]")
     console.print(f"OpenAPI Documentation: http://{host}:{port}/docs")
     uvicorn.run("signalrag.api.app:app", host=host, port=port, reload=reload)
+
+
+@app.command("multihop")
+def multihop_query(
+    query_text: Annotated[str, typer.Argument(help="Complex query to decompose and retrieve")],
+    config_path: Annotated[
+        Path,
+        typer.Option("--config", "-c", help="Path to YAML configuration"),
+    ] = Path("configs/default.yaml"),
+    top_k: Annotated[
+        int,
+        typer.Option("--top-k", "-k", help="Candidate items per sub-query"),
+    ] = 3,
+) -> None:
+    """Decompose complex queries into sub-questions and retrieve multi-hop evidence."""
+    from signalrag.core.config import load_config
+    from signalrag.generation.engine import RAGEngine
+    from signalrag.retrieval.decomposer import MultiHopRetriever
+
+    cfg = load_config(config_path)
+    engine = RAGEngine.from_config(cfg)
+    retriever = MultiHopRetriever(pipeline=engine.retrieval_pipeline)
+
+    console.print(f"[bold cyan]Original Query:[/bold cyan] {query_text}")
+    trace = retriever.retrieve(query_text, top_k_per_subquery=top_k)
+
+    console.print(
+        f"[bold green]Decomposition Plan:[/bold green] ({len(trace.plan.sub_queries)} sub-queries)"
+    )
+    for sq in trace.plan.sub_queries:
+        console.print(f"  • [yellow]{sq.id}[/yellow]: {sq.query} [dim]({sq.intent})[/dim]")
+
+    console.print(
+        f"\n[bold green]Merged Evidence Chunks:[/bold green] ({len(trace.merged_results)} unique passages)"
+    )
+    for idx, r in enumerate(trace.merged_results, 1):
+        console.print(
+            f"  [{idx}] Chunk {r.chunk.id} (Doc: {r.chunk.document_id}) - Score: {r.score:.3f}"
+        )
+        console.print(f"      [dim]{r.chunk.text[:120]}...[/dim]")
