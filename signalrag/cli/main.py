@@ -721,3 +721,38 @@ def route_query(
     )
     console.print(f"[bold]Confidence:[/bold] {decision.confidence * 100:.1f}%")
     console.print(f"[dim]Reasoning: {decision.reasoning}[/dim]")
+
+
+@app.command("verify-answer")
+def verify_answer_cli(
+    answer_text: Annotated[
+        str, typer.Option("--answer", "-a", help="Generated answer text to audit")
+    ],
+    context_text: Annotated[str, typer.Option("--context", "-c", help="Retrieved context passage")],
+) -> None:
+    """Verify factual grounding of answer against evidence to flag hallucinations."""
+    from signalrag.generation.hallucination import HallucinationDetector
+    from signalrag.models.chunk import Chunk
+
+    chunk = Chunk(id="ref_passage", document_id="doc1", text=context_text)
+    detector = HallucinationDetector(support_threshold=0.5)
+    report = detector.verify_answer(answer_text, [chunk])
+
+    status_color = (
+        "green"
+        if report.verdict == "PASS"
+        else ("yellow" if report.verdict == "WARNING" else "red")
+    )
+    console.print(
+        f"[bold]Attribution Verdict:[/bold] [{status_color}]{report.verdict}[/{status_color}] ({report.faithfulness_ratio * 100:.1f}% grounded)"
+    )
+    console.print(
+        f"Total Claims: {report.total_claims} | Supported: {report.supported_claims} | Hallucinations: {report.unsupported_claims}\n"
+    )
+
+    for idx, c in enumerate(report.claims, 1):
+        mark = "✓" if c.supported else "✗"
+        color = "green" if c.supported else "red"
+        console.print(
+            f"  [{color}]{mark}[/{color}] Claim {idx}: {c.claim} [dim](score: {c.confidence:.2f})[/dim]"
+        )
