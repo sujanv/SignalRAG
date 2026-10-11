@@ -6,7 +6,7 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
-from signalrag.models.citation import CitationSource
+from signalrag.models.citation import Citation, CitationSource
 
 
 class QueryRequest(BaseModel):
@@ -18,7 +18,7 @@ class QueryRequest(BaseModel):
 class QueryResponse(BaseModel):
     query: str
     answer: str
-    citations: list[CitationSource] = Field(default_factory=list)
+    citations: list[Citation | CitationSource] = Field(default_factory=list)
     latency_ms: float
     retrieved_chunk_count: int
 
