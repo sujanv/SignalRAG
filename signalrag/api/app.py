@@ -182,3 +182,15 @@ def get_metrics() -> dict[str, Any]:
     from signalrag.core.observability import global_metrics
 
     return global_metrics.get_summary()
+
+
+@app.get("/metrics/prometheus", tags=["System"])
+def get_prometheus_metrics():
+    """Export Prometheus text exposition metrics for scraping."""
+    from fastapi import Response
+
+    from signalrag.core.telemetry import global_telemetry
+
+    return Response(
+        content=global_telemetry.format_prometheus(), media_type="text/plain; version=0.0.4"
+    )
