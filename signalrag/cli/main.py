@@ -703,3 +703,21 @@ def generate_eval(
     console.print(
         f"[bold green]Successfully generated {len(dataset)} synthetic evaluation examples into {output_path}![/bold green]"
     )
+
+
+@app.command("route")
+def route_query(
+    query_text: Annotated[str, typer.Argument(help="Query text to analyze for semantic routing")],
+) -> None:
+    """Analyze query and determine optimal retrieval strategy (BM25, Semantic, MultiHop, or Hybrid)."""
+    from signalrag.retrieval.router import QueryRouter
+
+    router = QueryRouter()
+    decision = router.route(query_text)
+
+    console.print(f"[bold cyan]Query:[/bold cyan] {decision.query}")
+    console.print(
+        f"[bold green]Routed Strategy:[/bold green] [yellow]{decision.target_strategy.upper()}[/yellow]"
+    )
+    console.print(f"[bold]Confidence:[/bold] {decision.confidence * 100:.1f}%")
+    console.print(f"[dim]Reasoning: {decision.reasoning}[/dim]")

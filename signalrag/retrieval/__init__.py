@@ -31,11 +31,14 @@ from signalrag.retrieval.rewriter import (
     HeuristicQueryRewriter,
     LLMQueryRewriter,
 )
+from signalrag.retrieval.router import QueryRouter, RouteDecision
 from signalrag.retrieval.semantic import SemanticRetriever
 
 __all__ = [
     "BaseRetriever",
     "SemanticRetriever",
+    "QueryRouter",
+    "RouteDecision",
     "BM25Retriever",
     "HybridRetriever",
     "MetadataFilter",
