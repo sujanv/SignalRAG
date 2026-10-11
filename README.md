@@ -2,42 +2,50 @@
 
 [![CI](https://github.com/sujanv/SignalRAG/actions/workflows/ci.yml/badge.svg)](https://github.com/sujanv/SignalRAG/actions/workflows/ci.yml)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
-[![Coverage](https://img.shields.io/badge/coverage-88%25-brightgreen.svg)](https://github.com/sujanv/SignalRAG)
+[![Coverage](https://img.shields.io/badge/coverage-89%25-brightgreen.svg)](https://github.com/sujanv/SignalRAG)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-> **Production-grade RAG pipeline with retrieval and answer evaluation.**
+> **Production-grade RAG pipeline with retrieval and answer evaluation, multi-hop decomposition, hallucination detection, and enterprise telemetry.**
 
-SignalRAG is an enterprise-grade Retrieval-Augmented Generation (RAG) platform and experimentation framework built from the ground up for high precision, verifiable claim grounding, and scientific evaluation.
+SignalRAG is an enterprise-grade Retrieval-Augmented Generation (RAG) platform, experimentation framework, and diagnostic engine built from the ground up for high precision, verifiable claim grounding, and scientific evaluation.
 
 ---
 
 ## Architecture
 
 ```
-Documents
-   ↓
-Parsing (PDF / Markdown / Structured Text)
-   ↓
-Chunking (Recursive / Token-aware + Metadata Extraction)
-   ↓
-Embedding (Hash / SentenceTransformers / OpenAI)
-   ↓
-Hybrid Retrieval (BM25Plus + Vector Cosine + RRF Fusion)
-   ↓
-Reranking (Cross-Attention Scoring Heuristic)
-   ↓
-Context Compression (Extractive Sentence Filtering)
-   ↓
-LLM (Grounded Synthesis & Sufficiency Guardrails)
-   ↓
-Citations (Claim-to-Chunk Footnote Verification)
+User Query
+    ↓
+Semantic Query Router ───────► (Direct Lexical BM25 / Semantic Vector / MultiHop)
+    ↓
+Multi-Hop Query Decomposer
+    ↓
+┌──────────────────────────────┐
+│  BM25 Lexical Retriever      │
+│  Dense Vector Retriever      │
+│  (SQLite / In-Memory Store)  │
+└──────────────┬───────────────┘
+               ↓
+    Reciprocal Rank Fusion
+               ↓
+     Cross-Encoder Reranker
+               ↓
+  Context Sentence Compression
+               ↓
+       LLM Generation
+               ↓
+   Footnote Citation Tracker
+               ↓
+  Hallucination Detector & Claim Attribution
+               ↓
+ Prometheus Metrics & OpenTelemetry Spans
 ```
 
 ---
 
 ## Evaluation Benchmark
 
-SignalRAG includes a built-in benchmark evaluation engine and failure classification taxonomy:
+SignalRAG includes a built-in benchmark evaluation engine, synthetic dataset generator, and failure classification taxonomy:
 
 ```
 SignalRAG Evaluation
@@ -98,7 +106,7 @@ pip install -e ".[dev]"
 # Ingest raw text or PDF documents
 signalrag ingest ./data
 
-# Build hybrid index
+# Build hybrid index (In-memory or persistent SQLite)
 signalrag index
 ```
 
@@ -112,48 +120,106 @@ signalrag query "What is the primary role of BM25 lexical search in hybrid retri
 signalrag query "Explain context compression" --stream
 ```
 
-### 4. Interactive Retrieval Debugger
+### 4. Advanced Features (Hours 41–48)
 
-Inspect all internal candidate transformations step-by-step:
-
+#### Multi-Hop Query Decomposition (Hour 41)
+Break complex, compound, or comparative queries into atomic sub-questions with fused evidence:
 ```bash
-signalrag debug "Why does X happen?"
+signalrag multihop "Compare BM25 lexical ranking and dense vector search"
 ```
 
-```
-QUERY: Why does X happen?
-  ↓ Rewritten Query: why does x happen (0.4ms)
-  ↓ BM25 Results: chunk-01 (score: 4.82)
-  ↓ Vector Results: chunk-02 (score: 0.91)
-  ↓ Merged Results (RRF): chunk-01 (fused: 0.032)
-  ↓ Reranked Results: chunk-01 (score: 0.89)
-  ↓ Final Context: [Passage 1] Extracted salient sentence...
-```
-
-### 5. Run Evaluation Benchmarks
-
+#### Semantic Query Routing (Hour 44)
+Analyze query intent and route to the optimal retrieval backend:
 ```bash
-signalrag evaluate --dataset eval/questions.json
-signalrag dashboard
+signalrag route "ERR_CONNECTION_REFUSED 502"
+signalrag route "Why is reciprocal rank fusion effective for hybrid search?"
 ```
 
-### 6. Side-by-Side Experiment Comparison
-
+#### Hallucination Detection & Claim Attribution (Hour 45)
+Decompose generated answers into atomic claims and verify factual entailment against context:
 ```bash
-signalrag compare exp-hybrid-512 exp-dense-768
+signalrag verify-answer   --answer "SignalRAG uses BM25 and vector search. It was invented in 1969 by Apollo."   --context "SignalRAG combines BM25 lexical search with dense vector similarity."
 ```
 
+#### Synthetic Evaluation Dataset Generation (Hour 43)
+Automatically synthesize evaluation questions and ground-truth citations from local documents:
+```bash
+signalrag generate-eval --docs data/samples --output eval/synthetic.json --count 20
 ```
-                    Experiment A    Experiment B    Delta
-Chunk size               512             768
-Embedding              model-A         model-B
-Retriever               Hybrid          Semantic
-Reranker                  ✓               ✓
 
-Recall@5                84.2%           89.7%       +5.5% (▲)
-MRR                     0.74            0.83        +0.09 (▲)
-Faithfulness            88.1%           92.4%       +4.3% (▲)
-Latency                 1.4s            1.9s        +0.50s (▼)
+---
+
+## Client SDKs (Python & Go)
+
+### Python Client
+
+```python
+from signalrag import SignalRAGClient
+
+with SignalRAGClient(base_url="http://localhost:8000") as client:
+    # 1. Ingest document
+    client.add_document("SignalRAG combines BM25 and vector search with claim verification.")
+
+    # 2. Trigger indexing
+    client.index()
+
+    # 3. Query with citations
+    resp = client.query("What does SignalRAG combine?", top_k=3)
+    print(f"Answer: {resp.answer}")
+    for c in resp.citations:
+        print(f"[{c.index}] Doc: {c.document_id} - {c.text}")
+```
+
+### Golang Client
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"log"
+
+	"github.com/sujanv/SignalRAG/clients/go"
+)
+
+func main() {
+	client := signalrag.NewClient("http://localhost:8000", nil)
+
+	resp, err := client.Query(context.Background(), signalrag.QueryRequest{
+		Query: "Explain RAG architecture",
+		TopK:  3,
+	})
+	if err != nil {
+		log.Fatalf("Query failed: %v", err)
+	}
+
+	fmt.Printf("Answer: %s\nLatency: %.1fms\n", resp.Answer, resp.LatencyMs)
+}
+```
+
+---
+
+## Production Observability & Prometheus
+
+SignalRAG provides enterprise monitoring and OpenTelemetry span tracking:
+
+- **JSON Summary**: `GET http://localhost:8000/metrics`
+- **Prometheus Text Exposition**: `GET http://localhost:8000/metrics/prometheus`
+
+```prometheus
+# HELP signalrag_queries_total Total number of RAG queries executed.
+# TYPE signalrag_queries_total counter
+signalrag_queries_total{status="success"} 42
+signalrag_queries_total{status="error"} 0
+
+# HELP signalrag_latency_seconds_sum Total cumulative latency across queries.
+# TYPE signalrag_latency_seconds_sum counter
+signalrag_latency_seconds_sum 1.845012
+
+# HELP signalrag_retrieved_chunks_total Total number of candidate chunks retrieved.
+# TYPE signalrag_retrieved_chunks_total counter
+signalrag_retrieved_chunks_total 126
 ```
 
 ---
@@ -169,6 +235,7 @@ signalrag serve --host 0.0.0.0 --port 8000
 - **Interactive UI**: `http://localhost:8000/`
 - **OpenAPI Documentation**: `http://localhost:8000/docs`
 - **Operational Metrics**: `http://localhost:8000/metrics`
+- **Prometheus Metrics**: `http://localhost:8000/metrics/prometheus`
 
 ---
 
@@ -182,7 +249,7 @@ docker compose up -d
 
 ---
 
-## 40-Hour Build History
+## Complete Build Progression (Hours 01–48)
 
 - **Phase 1 — Foundation (Hours 01–06)**: Project initialization, config system, document models, ingestion loaders, PDF parser, ingestion test suite.
 - **Phase 2 — Chunking & Indexing (Hours 07–12)**: Recursive & token chunking, metadata extraction, embedding services, vector store, indexing pipeline, incremental cache ledger.
@@ -190,6 +257,15 @@ docker compose up -d
 - **Phase 4 — Generation & Citations (Hours 20–24)**: Answer generation, citation tracking, footnote rendering, grounded-answer guardrails, streaming responses.
 - **Phase 5 — Evaluation (Hours 25–30)**: Evaluation benchmark dataset, retrieval IR metrics (Recall, Precision, MRR, NDCG), answer metrics (faithfulness, relevance), evaluation runner CLI, experiment tracking, Rich dashboard.
 - **Phase 6 — Deep Diagnostics & Polish (Hours 31–40)**: Retrieval debugger, root cause failure analysis, side-by-side experiment comparison, FastAPI REST API, modern Web UI, observability & telemetry, caching layer, Docker containerization, GitHub Actions CI/CD, documentation & interactive demo.
+- **Phase 7 — Enterprise Enhancements (Hours 41–48)**:
+  - **Hour 41**: Multi-hop query decomposition and reasoning retrieval.
+  - **Hour 42**: Persistent SQLite vector store with ACID metadata indexing.
+  - **Hour 43**: Synthetic evaluation dataset generator.
+  - **Hour 44**: Semantic query router (BM25, Semantic, MultiHop, Hybrid).
+  - **Hour 45**: Hallucination detector and claim-level attribution verification.
+  - **Hour 46**: Prometheus metrics exposition and OpenTelemetry tracing.
+  - **Hour 47**: Official Python and Golang client SDKs.
+  - **Hour 48**: Complete architecture and production operations guide.
 
 ---
 
