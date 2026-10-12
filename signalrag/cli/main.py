@@ -929,3 +929,27 @@ def auth_query_cli(
     console.print(f"Visible Chunks: [green]{len(visible)}[/green] / {len(chunks)}")
     for c in visible:
         console.print(f"  • {c.id}: {c.text}")
+
+
+@app.command("regression")
+def check_regression_cli(
+    max_drop: Annotated[
+        float, typer.Option("--max-drop", "-d", help="Max allowable drop in metric value")
+    ] = 0.05,
+) -> None:
+    """Run regression check comparing simulated candidate metrics against baseline."""
+    from signalrag.evaluation.regression import RegressionGuard
+
+    base = {"recall_at_5": 0.88, "mrr": 0.82, "faithfulness": 0.92}
+    cand = {"recall_at_5": 0.89, "mrr": 0.81, "faithfulness": 0.91}
+
+    guard = RegressionGuard(max_allowed_drop=max_drop)
+    res = guard.check(base, cand)
+
+    status_tag = "[bold green]PASSED[/bold green]" if res.passed else "[bold red]FAILED[/bold red]"
+    console.print(f"Regression Check: {status_tag} (Max Allowed Drop: {max_drop * 100:.1f}%)")
+    for d in res.deltas:
+        mark = "✓" if not d.is_regression else "✗"
+        console.print(
+            f"  {mark} {d.metric_name}: Base={d.baseline_value:.3f} | Cand={d.candidate_value:.3f} | Delta={d.diff:+.3f}"
+        )
