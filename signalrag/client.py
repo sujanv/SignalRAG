@@ -68,3 +68,54 @@ class SignalRAGClient:
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:
         self.close()
+
+
+class AsyncSignalRAGClient:
+    """Asynchronous HTTP client for high-concurrency SignalRAG integration."""
+
+    def __init__(
+        self,
+        base_url: str = "http://localhost:8000",
+        timeout: float = 30.0,
+        client: httpx.AsyncClient | None = None,
+    ):
+        self.base_url = base_url.rstrip("/")
+        if client is not None:
+            self._client = client
+        else:
+            self._client = httpx.AsyncClient(base_url=self.base_url, timeout=timeout)
+
+    async def query(self, query: str, top_k: int = 5) -> QueryResponse:
+        res = await self._client.post("/query", json={"query": query, "top_k": top_k})
+        res.raise_for_status()
+        return QueryResponse.model_validate(res.json())
+
+    async def add_document(
+        self,
+        content: str,
+        document_id: str | None = None,
+        metadata: dict[str, Any] | None = None,
+    ) -> DocumentResponse:
+        payload: dict[str, Any] = {"content": content, "metadata": metadata or {}}
+        if document_id:
+            payload["document_id"] = document_id
+        res = await self._client.post("/documents", json=payload)
+        res.raise_for_status()
+        return DocumentResponse.model_validate(res.json())
+
+    async def index(self) -> IndexResponse:
+        res = await self._client.post("/index", json={})
+        res.raise_for_status()
+        return IndexResponse.model_validate(res.json())
+
+    async def close(self) -> None:
+        try:
+            await self._client.aclose()
+        except AttributeError:
+            pass
+
+    async def __aenter__(self) -> AsyncSignalRAGClient:
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
+        await self.close()
