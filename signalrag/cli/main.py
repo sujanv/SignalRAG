@@ -756,3 +756,32 @@ def verify_answer_cli(
         console.print(
             f"  [{color}]{mark}[/{color}] Claim {idx}: {c.claim} [dim](score: {c.confidence:.2f})[/dim]"
         )
+
+
+@app.command("expand")
+def expand_query_cli(
+    query_text: Annotated[str, typer.Argument(help="Initial query to expand using PRF")],
+    top_k: Annotated[int, typer.Option("--top-k", "-k", help="Candidate items to retrieve")] = 3,
+) -> None:
+    """Enrich query with pseudo-relevance feedback terms from top retrieval passages."""
+    from signalrag.core.config import load_config
+    from signalrag.generation.engine import RAGEngine
+    from signalrag.retrieval.expansion import PseudoRelevanceExpander
+
+    cfg = load_config()
+    engine = RAGEngine.from_config(cfg)
+    expander = PseudoRelevanceExpander(top_n_terms=3)
+
+    exp_res, results = expander.retrieve_with_prf(
+        query_text, engine.retrieval_pipeline, top_k=top_k
+    )
+    console.print(f"[bold cyan]Original Query:[/bold cyan] {exp_res.original_query}")
+    console.print(
+        f"[bold green]Discovered Terms:[/bold green] {', '.join(exp_res.expansion_terms) if exp_res.expansion_terms else 'None'}"
+    )
+    console.print(f"[bold yellow]Expanded Query:[/bold yellow] {exp_res.expanded_query}")
+    console.print(f"\n[bold]Retrieved Chunks ({len(results)}):[/bold]")
+    for idx, r in enumerate(results, 1):
+        console.print(
+            f"  [{idx}] Chunk {r.chunk.id} (Score: {r.score:.3f}): {r.chunk.text[:100]}..."
+        )

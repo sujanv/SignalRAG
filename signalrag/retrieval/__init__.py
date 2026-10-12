@@ -14,6 +14,7 @@ from signalrag.retrieval.decomposer import (
     QueryDecompositionPlan,
     SubQuery,
 )
+from signalrag.retrieval.expansion import ExpandedQuery, PseudoRelevanceExpander
 from signalrag.retrieval.filter import MetadataFilter
 from signalrag.retrieval.hybrid import HybridRetriever
 from signalrag.retrieval.pipeline import (
@@ -37,6 +38,8 @@ from signalrag.retrieval.semantic import SemanticRetriever
 __all__ = [
     "BaseRetriever",
     "SemanticRetriever",
+    "ExpandedQuery",
+    "PseudoRelevanceExpander",
     "QueryRouter",
     "RouteDecision",
     "BM25Retriever",
