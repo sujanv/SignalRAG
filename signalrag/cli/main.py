@@ -805,3 +805,36 @@ def show_versions_cli(
     for rev in history:
         status_tag = "[green](Active)[/green]" if rev.is_active else "[red](Superseded)[/red]"
         console.print(f"  • Version {rev.version} {status_tag} - Chunks: {len(rev.chunk_ids)}")
+
+
+@app.command("budget")
+def budget_cli(
+    max_tokens: Annotated[
+        int, typer.Option("--max-tokens", "-m", help="Total context budget in tokens")
+    ] = 1024,
+    query_text: Annotated[str, typer.Option("--query", "-q", help="Query text")] = "architecture",
+) -> None:
+    """Inspect dynamic token budget allocation for retrieved chunks."""
+    from signalrag.generation.budget import TokenBudgetAllocator
+    from signalrag.models.chunk import Chunk, ChunkMetadata
+
+    chunks = [
+        Chunk(
+            id=f"chunk_{i}",
+            document_id=f"doc_{i}",
+            text=f"Passage {i} detailing system specifications and parameters. " * 15,
+            metadata=ChunkMetadata(document_id=f"doc_{i}", chunk_index=i, source="spec.txt"),
+        )
+        for i in range(5)
+    ]
+
+    allocator = TokenBudgetAllocator(max_context_tokens=max_tokens)
+    res = allocator.allocate(chunks, query=query_text)
+
+    console.print(
+        f"[bold cyan]Token Budget Allocator[/bold cyan] (Limit: {res.budget_limit} tokens)"
+    )
+    console.print(f"Tokens Used: [green]{res.total_tokens_used}[/green] / {res.budget_limit}")
+    console.print(
+        f"Allocated Chunks: {len(res.allocated_chunks)} | Dropped Chunks: {res.dropped_chunk_count}"
+    )
