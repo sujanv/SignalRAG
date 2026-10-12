@@ -838,3 +838,43 @@ def budget_cli(
     console.print(
         f"Allocated Chunks: {len(res.allocated_chunks)} | Dropped Chunks: {res.dropped_chunk_count}"
     )
+
+
+@app.command("dedup")
+def dedup_cli(
+    threshold: Annotated[
+        float, typer.Option("--threshold", "-t", help="Jaccard similarity threshold")
+    ] = 0.75,
+) -> None:
+    """Analyze chunk redundancy and demonstrate near-duplicate clustering."""
+    from signalrag.chunking.dedup import SemanticChunkDeduplicator
+    from signalrag.models.chunk import Chunk, ChunkMetadata
+
+    chunks = [
+        Chunk(
+            id="c1",
+            document_id="doc1",
+            text="Vector embeddings capture semantic similarity across high-dimensional space.",
+            metadata=ChunkMetadata(document_id="doc1", chunk_index=0, source="s1"),
+        ),
+        Chunk(
+            id="c2",
+            document_id="doc2",
+            text="Vector embeddings capture semantic similarity in high-dimensional space.",
+            metadata=ChunkMetadata(document_id="doc2", chunk_index=1, source="s2"),
+        ),
+        Chunk(
+            id="c3",
+            document_id="doc3",
+            text="BM25 is a ranking function based on probabilistic relevance models.",
+            metadata=ChunkMetadata(document_id="doc3", chunk_index=2, source="s3"),
+        ),
+    ]
+
+    dedup = SemanticChunkDeduplicator(similarity_threshold=threshold)
+    unique_chunks, report = dedup.deduplicate(chunks)
+
+    console.print(f"[bold cyan]Chunk Deduplication[/bold cyan] (Threshold: {threshold:.2f})")
+    console.print(
+        f"Original: {report.original_count} | Retained: [green]{report.retained_count}[/green] | Pruned: [red]{report.duplicates_removed}[/red]"
+    )
