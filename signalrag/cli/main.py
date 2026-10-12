@@ -785,3 +785,23 @@ def expand_query_cli(
         console.print(
             f"  [{idx}] Chunk {r.chunk.id} (Score: {r.score:.3f}): {r.chunk.text[:100]}..."
         )
+
+
+@app.command("versions")
+def show_versions_cli(
+    doc_id: Annotated[str, typer.Argument(help="Document identifier to inspect revision history")],
+) -> None:
+    """Show document version history and superseded revisions."""
+    from signalrag.indexing.versioning import DocumentVersionManager
+
+    # For demonstration/CLI inspection
+    mgr = DocumentVersionManager()
+    history = mgr.get_version_history(doc_id)
+    if not history:
+        console.print(f"[yellow]No version history found for document '{doc_id}'.[/yellow]")
+        return
+
+    console.print(f"[bold cyan]Document Revisions for:[/bold cyan] {doc_id}")
+    for rev in history:
+        status_tag = "[green](Active)[/green]" if rev.is_active else "[red](Superseded)[/red]"
+        console.print(f"  • Version {rev.version} {status_tag} - Chunks: {len(rev.chunk_ids)}")

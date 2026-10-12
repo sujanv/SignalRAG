@@ -10,11 +10,14 @@ from signalrag.indexing.memory_store import MemoryVectorStore
 from signalrag.indexing.pipeline import IndexingPipeline, IndexingResult
 from signalrag.indexing.sqlite_store import SQLiteVectorStore
 from signalrag.indexing.vector_store import BaseVectorStore
+from signalrag.indexing.versioning import DocumentRevision, DocumentVersionManager
 
 __all__ = [
     "BaseVectorStore",
     "MemoryVectorStore",
     "SQLiteVectorStore",
+    "DocumentRevision",
+    "DocumentVersionManager",
     "IndexingPipeline",
     "IndexingResult",
     "IncrementalIndexer",
