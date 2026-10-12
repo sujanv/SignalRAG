@@ -878,3 +878,54 @@ def dedup_cli(
     console.print(
         f"Original: {report.original_count} | Retained: [green]{report.retained_count}[/green] | Pruned: [red]{report.duplicates_removed}[/red]"
     )
+
+
+@app.command("auth-query")
+def auth_query_cli(
+    user_id: Annotated[str, typer.Option("--user", "-u", help="User identifier")] = "alice",
+    tenant_id: Annotated[
+        str, typer.Option("--tenant", "-t", help="Tenant partition")
+    ] = "org_engineering",
+    role: Annotated[
+        str, typer.Option("--role", "-r", help="Assigned role (reader, contributor, admin)")
+    ] = "reader",
+) -> None:
+    """Simulate RBAC-scoped retrieval under multi-tenant security context."""
+    from signalrag.core.security import AccessController, SecurityContext
+    from signalrag.models.chunk import Chunk, ChunkMetadata
+
+    chunks = [
+        Chunk(
+            id="c_eng",
+            document_id="d1",
+            text="Engineering internal architecture docs.",
+            metadata=ChunkMetadata(
+                document_id="d1",
+                chunk_index=0,
+                source="eng.txt",
+                extra={"tenant_id": "org_engineering", "min_role": "reader"},
+            ),
+        ),
+        Chunk(
+            id="c_hr",
+            document_id="d2",
+            text="HR confidential compensation guidelines.",
+            metadata=ChunkMetadata(
+                document_id="d2",
+                chunk_index=0,
+                source="hr.txt",
+                extra={"tenant_id": "org_hr", "min_role": "admin"},
+            ),
+        ),
+    ]
+
+    sec_ctx = SecurityContext(user_id=user_id, tenant_id=tenant_id, roles=[role])
+    ctrl = AccessController()
+    visible = ctrl.filter_chunks(sec_ctx, chunks)
+
+    console.print(
+        f"[bold cyan]RBAC Context:[/bold cyan] User: {user_id} | Tenant: {tenant_id} | Role: {role}"
+    )
+    console.print(f"Visible Chunks: [green]{len(visible)}[/green] / {len(chunks)}")
+    for c in visible:
+        console.print(f"  • {c.id}: {c.text}")
