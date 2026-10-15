@@ -23,6 +23,7 @@ from signalrag.retrieval.graph import (
     KnowledgeGraphRetriever,
     RelationEdge,
 )
+from signalrag.retrieval.hierarchical import HierarchicalRetriever, ParentChunk
 from signalrag.retrieval.hybrid import HybridRetriever
 from signalrag.retrieval.pipeline import (
     PipelineRetrievalResponse,
@@ -45,6 +46,8 @@ from signalrag.retrieval.semantic import SemanticRetriever
 __all__ = [
     "BaseRetriever",
     "SemanticRetriever",
+    "HierarchicalRetriever",
+    "ParentChunk",
     "AdaptiveHybridFuser",
     "FusionWeights",
     "EntityNode",

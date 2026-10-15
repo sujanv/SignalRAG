@@ -1044,3 +1044,32 @@ def adaptive_fuse_cli(
     console.print(f"Classification: [yellow]{w.query_type.upper()}[/yellow]")
     console.print(f"Vector Weight (Dense): [green]{w.vector_weight:.2f}[/green]")
     console.print(f"BM25 Weight (Lexical): [blue]{w.bm25_weight:.2f}[/blue]")
+
+
+@app.command("hierarchical-search")
+def hier_search_cli(
+    doc_text: Annotated[
+        str, typer.Option("--text", "-t", help="Sample text to parse into parent/child chunks")
+    ] = "SignalRAG uses hierarchical indexing. Children are fine-grained embeddings. Parents contain complete paragraphs.",
+) -> None:
+    """Demonstrate hierarchical small-to-big parent-child chunk expansion."""
+    from signalrag.models.retrieval import SearchResult
+    from signalrag.retrieval.hierarchical import HierarchicalRetriever
+
+    retriever = HierarchicalRetriever(parent_size=100, child_size=35)
+    parents, children = retriever.build_hierarchy("doc_demo", doc_text)
+
+    console.print(
+        f"[bold cyan]Hierarchical Indexing:[/bold cyan] {len(parents)} Parents | {len(children)} Children"
+    )
+    for p in parents:
+        console.print(
+            f"  • [yellow]Parent {p.id}[/yellow]: {p.text[:60]}... ({len(p.child_chunk_ids)} children)"
+        )
+
+    if children:
+        demo_hit = [SearchResult(chunk=children[0], score=0.95)]
+        expanded = retriever.expand_results(demo_hit)
+        console.print(
+            f"\n[bold green]Expanded Hit to Parent:[/bold green] {expanded[0].chunk.id} -> {expanded[0].chunk.text}"
+        )
