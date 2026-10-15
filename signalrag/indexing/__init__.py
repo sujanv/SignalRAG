@@ -1,5 +1,6 @@
 """Vector stores, indexing pipelines, and incremental ledger indexing."""
 
+from signalrag.indexing.batch import BatchIndexReport, ConcurrentBatchIndexer
 from signalrag.indexing.incremental import (
     DocumentLedger,
     DocumentLedgerRecord,
@@ -16,6 +17,8 @@ __all__ = [
     "BaseVectorStore",
     "MemoryVectorStore",
     "SQLiteVectorStore",
+    "BatchIndexReport",
+    "ConcurrentBatchIndexer",
     "DocumentRevision",
     "DocumentVersionManager",
     "IndexingPipeline",

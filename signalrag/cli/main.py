@@ -1128,3 +1128,41 @@ def hyde_query_cli(
     console.print(
         f"[bold green]Hypothetical Passage:[/bold green]\n{hypo_doc.hypothetical_passage}"
     )
+
+
+@app.command("batch-index")
+def batch_index_cli(
+    count: Annotated[
+        int, typer.Option("--count", "-n", help="Number of documents to batch index")
+    ] = 10,
+    workers: Annotated[int, typer.Option("--workers", "-w", help="Concurrent worker threads")] = 4,
+) -> None:
+    """Run multi-threaded concurrent document indexing pipeline."""
+    from signalrag.chunking.recursive import RecursiveCharacterChunker
+    from signalrag.embeddings.hash_embedding import DeterministicHashEmbeddingService
+    from signalrag.indexing.batch import ConcurrentBatchIndexer
+    from signalrag.indexing.memory_store import MemoryVectorStore
+    from signalrag.models.document import Document
+
+    docs = [
+        Document(
+            id=f"batch_doc_{i}",
+            text=f"Technical specification document {i} discussing distributed indexing architectures and low latency vector lookups.",
+            metadata={"source": f"doc_{i}.txt"},
+        )
+        for i in range(count)
+    ]
+
+    indexer = ConcurrentBatchIndexer(max_workers=workers, batch_size=4)
+    chunker = RecursiveCharacterChunker(chunk_size=100, chunk_overlap=10, min_chunk_size=10)
+    emb = DeterministicHashEmbeddingService(dimension=32)
+    store = MemoryVectorStore()
+
+    report = indexer.index_documents(docs, chunker, emb, store)
+    console.print("[bold cyan]Concurrent Batch Indexing Complete:[/bold cyan]")
+    console.print(
+        f"  • Documents: {report.documents_processed} | Chunks Created: {report.chunks_created}"
+    )
+    console.print(
+        f"  • Duration: {report.elapsed_seconds}s | Throughput: [green]{report.chunks_per_second:.1f} chunks/sec[/green]"
+    )
