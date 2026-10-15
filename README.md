@@ -5,48 +5,64 @@
 [![Coverage](https://img.shields.io/badge/coverage-89%25-brightgreen.svg)](https://github.com/sujanv/SignalRAG)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-> **Production-grade RAG platform with hybrid retrieval, verifiable citation attribution, multi-tenant RBAC, pseudo-relevance feedback, dynamic token budgeting, and automated regression benchmarking.**
+> **Enterprise-grade RAG platform featuring hybrid search, GraphRAG entity-relation networks, Self-Reflective RAG (Self-RAG), Hypothetical Document Embeddings (HyDE), hierarchical parent-child retrieval, multi-tenant RBAC, semantic caching, and automated regression benchmarking.**
 
-SignalRAG is an enterprise-grade Retrieval-Augmented Generation (RAG) platform, experimentation framework, and diagnostic engine built from the ground up for high precision, verifiable claim grounding, and scientific evaluation.
+SignalRAG is a production-grade Retrieval-Augmented Generation (RAG) platform, experimentation framework, and diagnostic engine built from the ground up for high precision, verifiable claim grounding, and scientific evaluation.
 
 ---
 
 ## Architecture
 
 ```
-User Query
-    ↓
-Semantic Query Router ───────► (Direct Lexical BM25 / Semantic Vector / MultiHop)
-    ↓
-Multi-Hop Query Decomposer
-    ↓
-Pseudo-Relevance Feedback (PRF Expansion)
-    ↓
-┌────────────────────────────────────────┐
-│  BM25 Lexical Retriever                │
-│  Dense Vector Retriever                │
-│  (ACID SQLite / In-Memory Store)       │
-└──────────────────┬─────────────────────┘
-                   ↓
-     Multi-Tenant RBAC Filtering
-                   ↓
-      Reciprocal Rank Fusion
-                   ↓
-     Semantic Chunk Deduplication
-                   ↓
-        Cross-Encoder Reranker
-                   ↓
-     Context Sentence Compression
-                   ↓
-    Dynamic Token Budget Allocator
-                   ↓
-           LLM Generation
-                   ↓
-       Footnote Citation Tracker
-                   ↓
-     Hallucination & Claim Verifier
-                   ↓
-     Prometheus & OpenTelemetry Spans
+                                  User Query
+                                      │
+                   ┌──────────────────┴──────────────────┐
+                   ▼                                     ▼
+      Semantic Query Cache (Hit)             Semantic Query Router
+      (Fast Near-Neighbor Return)                        │
+                                                         ▼
+                                             Multi-Hop Decomposer
+                                                         │
+                        ┌────────────────────────────────┼────────────────────────────────┐
+                        ▼                                ▼                                ▼
+               BM25 Lexical Search               Dense Vector Search            GraphRAG Entity Network
+             (Inverted Index Scores)           (HyDE / Parent-Child Chunks)    (Associative Knowledge Graph)
+                        │                                │                                │
+                        └────────────────────────────────┼────────────────────────────────┘
+                                                         ▼
+                                           Adaptive Hybrid Fusion
+                                       (Query-Conditioned Alpha Normalization)
+                                                         │
+                                                         ▼
+                                            Multi-Tenant RBAC Guard
+                                                         │
+                                                         ▼
+                                           Semantic Chunk Deduplication
+                                                         │
+                                                         ▼
+                                              Cross-Encoder Reranker
+                                                         │
+                                                         ▼
+                                           Context Sentence Compression
+                                                         │
+                                                         ▼
+                                          Dynamic Token Budget Allocator
+                                                         │
+                                                         ▼
+                                           Self-Reflective RAG Evaluator
+                                           (Relevance Grading / Re-query)
+                                                         │
+                                                         ▼
+                                                 LLM Generation
+                                                         │
+                                                         ▼
+                                           Footnote Citation Attribution
+                                                         │
+                                                         ▼
+                                          Hallucination & Claim Verifier
+                                                         │
+                                                         ▼
+                                      Prometheus & OpenTelemetry Telemetry
 ```
 
 ---
@@ -105,6 +121,13 @@ SignalRAG provides a unified command-line tool `signalrag` for end-to-end operat
 | `query` | Execute question answering with cited footnotes | `signalrag query "What is BM25?"` |
 | `ingest` | Load and parse documents from filesystem | `signalrag ingest ./data` |
 | `index` | Build vector and lexical search indices | `signalrag index` |
+| `batch-index` | Multi-threaded concurrent batch indexing | `signalrag batch-index --workers 4 --count 50` |
+| `graph-query` | Associative GraphRAG entity-relation traversal | `signalrag graph-query "How does BM25 connect to SignalRAG?"` |
+| `self-rag` | Self-reflective retrieval grading & re-query | `signalrag self-rag "query"` |
+| `adaptive-fuse` | Dynamic query-conditioned alpha fusion | `signalrag adaptive-fuse "ERR_502_BAD_GATEWAY"` |
+| `hierarchical-search` | Small-to-big child-to-parent chunk expansion | `signalrag hierarchical-search --text "..."` |
+| `cache-stats` | Semantic query cache hits & telemetry | `signalrag cache-stats` |
+| `hyde` | Hypothetical Document Embeddings generation | `signalrag hyde "Explain vector search"` |
 | `multihop` | Decompose compound questions into sub-queries | `signalrag multihop "Compare BM25 and vector search"` |
 | `route` | Classify query intent to pick retrieval backend | `signalrag route "ERR_CONN_REFUSED 502"` |
 | `expand` | Rocchio Pseudo-Relevance Feedback expansion | `signalrag expand "vector index" -k 3` |
@@ -144,7 +167,7 @@ async with AsyncSignalRAGClient(base_url="http://localhost:8000") as client:
     print(resp.answer)
 ```
 
-### Golang Client SDK & Standalone CLI
+### Golang Client SDK & Native Tools
 
 ```go
 package main
@@ -172,13 +195,13 @@ func main() {
 }
 ```
 
-#### Standalone Go CLI
+#### Native Go CLI and Batch Indexer Tools
 ```bash
-# Query via Go binary
+# Query via standalone Go binary
 go run clients/go/cmd/signalrag-cli/main.go query -url http://localhost:8000 -k 3 "What is BM25?"
 
-# Trigger index update via Go binary
-go run clients/go/cmd/signalrag-cli/main.go index -url http://localhost:8000
+# High-concurrency batch loader in Go
+go run clients/go/cmd/signalrag-batch/main.go -url http://localhost:8000 -workers 8 -count 100
 ```
 
 ---
@@ -207,17 +230,7 @@ signalrag_retrieved_chunks_total 126
 
 ---
 
-## Docker Deployment
-
-Launch the complete stack in a single command:
-
-```bash
-docker compose up -d
-```
-
----
-
-## Complete Build Progression (Hours 01–56)
+## Complete Build Progression (Hours 01–64)
 
 - **Phase 1 — Foundation (Hours 01–06)**: Project initialization, config system, document models, ingestion loaders, PDF parser, ingestion test suite.
 - **Phase 2 — Chunking & Indexing (Hours 07–12)**: Recursive & token chunking, metadata extraction, embedding services, vector store, indexing pipeline, incremental cache ledger.
@@ -242,7 +255,16 @@ docker compose up -d
   - **Hour 53**: Multi-tenant isolation and Role-Based Access Control (RBAC).
   - **Hour 54**: Automated RAG regression testing and quality gatekeeper.
   - **Hour 55**: Standalone Golang CLI tool and async Python client SDK.
-  - **Hour 56**: Comprehensive enterprise architecture and operations documentation.
+  - **Hour 56**: Advanced enterprise features documentation.
+- **Phase 9 — Context Graphs & Cognitive RAG (Hours 57–64)**:
+  - **Hour 57**: Entity-relationship knowledge graph retrieval (GraphRAG).
+  - **Hour 58**: Self-Reflective RAG (Self-RAG) with relevance grading & query reformulation.
+  - **Hour 59**: Adaptive hybrid fusion weighting with score normalization.
+  - **Hour 60**: Hierarchical parent-child small-to-big document retrieval.
+  - **Hour 61**: Semantic similarity query cache with vector cosine proximity & TTL.
+  - **Hour 62**: Hypothetical Document Embeddings (HyDE) zero-shot passage synthesis.
+  - **Hour 63**: Concurrent multi-threaded batch indexing pipeline and Go loader.
+  - **Hour 64**: Comprehensive enterprise operations and GraphRAG guide.
 
 ---
 
