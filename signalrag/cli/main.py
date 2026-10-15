@@ -1028,3 +1028,19 @@ def self_rag_cli(
     console.print(f"Action: [bold]{decision.action}[/bold]")
     if decision.needs_re_retrieval:
         console.print(f"[yellow]Reformulated Query:[/yellow] {decision.reformulated_query}")
+
+
+@app.command("adaptive-fuse")
+def adaptive_fuse_cli(
+    query_text: Annotated[str, typer.Argument(help="Query to evaluate for dynamic hybrid fusion")],
+) -> None:
+    """Analyze query and calculate dynamic fusion weights for Vector and BM25 retrievers."""
+    from signalrag.retrieval.adaptive_fusion import AdaptiveHybridFuser
+
+    fuser = AdaptiveHybridFuser()
+    w = fuser.determine_weights(query_text)
+
+    console.print(f"[bold cyan]Adaptive Hybrid Fusion:[/bold cyan] {query_text}")
+    console.print(f"Classification: [yellow]{w.query_type.upper()}[/yellow]")
+    console.print(f"Vector Weight (Dense): [green]{w.vector_weight:.2f}[/green]")
+    console.print(f"BM25 Weight (Lexical): [blue]{w.bm25_weight:.2f}[/blue]")

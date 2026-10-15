@@ -1,5 +1,6 @@
 """Retrieval algorithms, rerankers, filters, compression, and unified pipeline."""
 
+from signalrag.retrieval.adaptive_fusion import AdaptiveHybridFuser, FusionWeights
 from signalrag.retrieval.base import BaseRetriever
 from signalrag.retrieval.bm25 import BM25Retriever
 from signalrag.retrieval.compressor import (
@@ -44,6 +45,8 @@ from signalrag.retrieval.semantic import SemanticRetriever
 __all__ = [
     "BaseRetriever",
     "SemanticRetriever",
+    "AdaptiveHybridFuser",
+    "FusionWeights",
     "EntityNode",
     "RelationEdge",
     "GraphContext",
