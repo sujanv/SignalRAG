@@ -992,3 +992,39 @@ def graph_query_cli(
     if ctx.subgraph_text:
         console.print(f"[bold yellow]Subgraphs Discovered:[/bold yellow]\n{ctx.subgraph_text}")
     console.print(f"Connected Chunk IDs: {ctx.connected_chunk_ids}")
+
+
+@app.command("self-rag")
+def self_rag_cli(
+    query_text: Annotated[
+        str, typer.Argument(help="Query to evaluate with self-reflective grading")
+    ],
+) -> None:
+    """Evaluate retrieval self-reflectively with relevance grading and reformulation triggers."""
+    from signalrag.generation.self_reflection import SelfReflectiveEngine
+    from signalrag.models.chunk import Chunk, ChunkMetadata
+
+    chunks = [
+        Chunk(
+            id="c_reflect_1",
+            document_id="doc1",
+            text="SignalRAG hybrid search combines BM25 and vector embeddings.",
+            metadata=ChunkMetadata(document_id="doc1", chunk_index=0, source="s1"),
+        )
+    ]
+
+    engine = SelfReflectiveEngine(relevance_threshold=0.4)
+    decision = engine.grade_retrieval(query_text, chunks)
+
+    color = (
+        "green"
+        if decision.retrieval_grade == "RELEVANT"
+        else ("yellow" if decision.retrieval_grade == "PARTIAL" else "red")
+    )
+    console.print(f"[bold cyan]Self-RAG Evaluation:[/bold cyan] {query_text}")
+    console.print(
+        f"Retrieval Grade: [{color}]{decision.retrieval_grade}[/{color}] (Score: {decision.relevance_score:.2f})"
+    )
+    console.print(f"Action: [bold]{decision.action}[/bold]")
+    if decision.needs_re_retrieval:
+        console.print(f"[yellow]Reformulated Query:[/yellow] {decision.reformulated_query}")
