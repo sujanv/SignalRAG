@@ -16,6 +16,12 @@ from signalrag.retrieval.decomposer import (
 )
 from signalrag.retrieval.expansion import ExpandedQuery, PseudoRelevanceExpander
 from signalrag.retrieval.filter import MetadataFilter
+from signalrag.retrieval.graph import (
+    EntityNode,
+    GraphContext,
+    KnowledgeGraphRetriever,
+    RelationEdge,
+)
 from signalrag.retrieval.hybrid import HybridRetriever
 from signalrag.retrieval.pipeline import (
     PipelineRetrievalResponse,
@@ -38,6 +44,10 @@ from signalrag.retrieval.semantic import SemanticRetriever
 __all__ = [
     "BaseRetriever",
     "SemanticRetriever",
+    "EntityNode",
+    "RelationEdge",
+    "GraphContext",
+    "KnowledgeGraphRetriever",
     "ExpandedQuery",
     "PseudoRelevanceExpander",
     "QueryRouter",

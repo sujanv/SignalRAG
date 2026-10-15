@@ -953,3 +953,42 @@ def check_regression_cli(
         console.print(
             f"  {mark} {d.metric_name}: Base={d.baseline_value:.3f} | Cand={d.candidate_value:.3f} | Delta={d.diff:+.3f}"
         )
+
+
+@app.command("graph-query")
+def graph_query_cli(
+    query_text: Annotated[
+        str, typer.Argument(help="Query to evaluate against entity knowledge graph")
+    ],
+) -> None:
+    """Traverse associative entity-relation graph and retrieve linked passage subgraphs."""
+    from signalrag.models.chunk import Chunk, ChunkMetadata
+    from signalrag.retrieval.graph import KnowledgeGraphRetriever
+
+    # Demo corpus chunks
+    chunks = [
+        Chunk(
+            id="c_graph_1",
+            document_id="doc1",
+            text="SignalRAG utilizes BM25 for lexical search. BM25 implements probabilistic ranking.",
+            metadata=ChunkMetadata(document_id="doc1", chunk_index=0, source="s1"),
+        ),
+        Chunk(
+            id="c_graph_2",
+            document_id="doc2",
+            text="SignalRAG connects to SQLite for persistent vector storage.",
+            metadata=ChunkMetadata(document_id="doc2", chunk_index=1, source="s2"),
+        ),
+    ]
+
+    kg = KnowledgeGraphRetriever()
+    kg.index_chunks(chunks)
+    ctx = kg.retrieve_subgraph(query_text)
+
+    console.print(f"[bold cyan]GraphRAG Query:[/bold cyan] {query_text}")
+    console.print(
+        f"Entities Found: [green]{len(ctx.entities)}[/green] | Relations: [green]{len(ctx.relations)}[/green]"
+    )
+    if ctx.subgraph_text:
+        console.print(f"[bold yellow]Subgraphs Discovered:[/bold yellow]\n{ctx.subgraph_text}")
+    console.print(f"Connected Chunk IDs: {ctx.connected_chunk_ids}")
