@@ -1106,3 +1106,25 @@ def cache_stats_cli() -> None:
         f"  • Hits: [green]{stats['hits']}[/green] | Misses: [red]{stats['misses']}[/red]"
     )
     console.print(f"  • Hit Rate: [bold yellow]{stats['hit_rate'] * 100:.1f}%[/bold yellow]")
+
+
+@app.command("hyde")
+def hyde_query_cli(
+    query_text: Annotated[
+        str, typer.Argument(help="Question to process with Hypothetical Document Embeddings")
+    ],
+) -> None:
+    """Generate hypothetical passage and retrieve documents in document-space."""
+    from signalrag.embeddings.hash_embedding import DeterministicHashEmbeddingService
+    from signalrag.indexing.memory_store import MemoryVectorStore
+    from signalrag.retrieval.hyde import HyDERetriever
+
+    store = MemoryVectorStore()
+    emb = DeterministicHashEmbeddingService(dimension=32)
+    hyde = HyDERetriever(vector_store=store, embedding_service=emb)
+
+    hypo_doc = hyde.generate_hypothetical_document(query_text)
+    console.print(f"[bold cyan]HyDE Question:[/bold cyan] {query_text}")
+    console.print(
+        f"[bold green]Hypothetical Passage:[/bold green]\n{hypo_doc.hypothetical_passage}"
+    )

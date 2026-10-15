@@ -25,6 +25,7 @@ from signalrag.retrieval.graph import (
 )
 from signalrag.retrieval.hierarchical import HierarchicalRetriever, ParentChunk
 from signalrag.retrieval.hybrid import HybridRetriever
+from signalrag.retrieval.hyde import HyDERetriever, HypotheticalDocument
 from signalrag.retrieval.pipeline import (
     PipelineRetrievalResponse,
     RetrievalPipeline,
@@ -47,6 +48,8 @@ from signalrag.retrieval.semantic_cache import CacheEntry, SemanticQueryCache
 __all__ = [
     "BaseRetriever",
     "SemanticRetriever",
+    "HyDERetriever",
+    "HypotheticalDocument",
     "CacheEntry",
     "SemanticQueryCache",
     "HierarchicalRetriever",
