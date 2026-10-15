@@ -1073,3 +1073,36 @@ def hier_search_cli(
         console.print(
             f"\n[bold green]Expanded Hit to Parent:[/bold green] {expanded[0].chunk.id} -> {expanded[0].chunk.text}"
         )
+
+
+@app.command("cache-stats")
+def cache_stats_cli() -> None:
+    """Display semantic query caching metrics and hit-rate telemetry."""
+    from signalrag.models.chunk import Chunk, ChunkMetadata
+    from signalrag.models.retrieval import SearchResult
+    from signalrag.retrieval.semantic_cache import SemanticQueryCache
+
+    cache = SemanticQueryCache(similarity_threshold=0.9)
+    # Simulate cache population and lookup
+    dummy_hit = [
+        SearchResult(
+            chunk=Chunk(
+                id="c1",
+                document_id="d1",
+                text="cached text",
+                metadata=ChunkMetadata(document_id="d1", chunk_index=0, source="s1"),
+            ),
+            score=1.0,
+        )
+    ]
+    cache.set("what is rag", [1.0, 0.0, 0.0], dummy_hit)
+    cache.get([0.98, 0.05, 0.0])  # Near semantic match
+    cache.get([0.0, 1.0, 0.0])  # Miss
+
+    stats = cache.stats()
+    console.print("[bold cyan]Semantic Cache Telemetry:[/bold cyan]")
+    console.print(f"  • Cached Queries: {stats['cached_entries']}")
+    console.print(
+        f"  • Hits: [green]{stats['hits']}[/green] | Misses: [red]{stats['misses']}[/red]"
+    )
+    console.print(f"  • Hit Rate: [bold yellow]{stats['hit_rate'] * 100:.1f}%[/bold yellow]")

@@ -42,10 +42,13 @@ from signalrag.retrieval.rewriter import (
 )
 from signalrag.retrieval.router import QueryRouter, RouteDecision
 from signalrag.retrieval.semantic import SemanticRetriever
+from signalrag.retrieval.semantic_cache import CacheEntry, SemanticQueryCache
 
 __all__ = [
     "BaseRetriever",
     "SemanticRetriever",
+    "CacheEntry",
+    "SemanticQueryCache",
     "HierarchicalRetriever",
     "ParentChunk",
     "AdaptiveHybridFuser",
