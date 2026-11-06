@@ -1342,3 +1342,19 @@ def stream_query_cli(
     console.print("[dim]----------------------------------------[/dim]")
     for event_str in generate_sse_events(query_text, tokens, citations):
         console.print(event_str.strip())
+
+
+@app.command("redteam")
+def redteam_cli() -> None:
+    """Run automated adversarial red-teaming battery against RAG guardrails."""
+    from signalrag.evaluation.redteam import AdversarialRedTeamRunner
+
+    runner = AdversarialRedTeamRunner()
+    report = runner.run_suite(mock_refusal=True)
+
+    console.print("[bold cyan]Adversarial Red-Team Robustness Audit:[/bold cyan]")
+    console.print(f"  • Total Probes: {report.total_probes} | Defended: {report.passed_probes}")
+    console.print(f"  • Robustness Score: [bold green]{report.robustness_score}%[/bold green]")
+    for p in report.probes:
+        status_icon = "[green]✓ PASS[/green]" if p.passed else "[red]✗ FAIL[/red]"
+        console.print(f"  • [{p.category}] {p.probe_id}: {status_icon} - {p.notes}")
