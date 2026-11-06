@@ -17,6 +17,7 @@ from signalrag.retrieval.decomposer import (
     SubQuery,
 )
 from signalrag.retrieval.expansion import ExpandedQuery, PseudoRelevanceExpander
+from signalrag.retrieval.explainer import RetrievalExplainer, RetrievalExplanation, TokenMatch
 from signalrag.retrieval.filter import MetadataFilter
 from signalrag.retrieval.graph import (
     EntityNode,
@@ -55,6 +56,9 @@ __all__ = [
     "SemanticQueryCache",
     "ClusterCentroid",
     "SemanticClusterEngine",
+    "TokenMatch",
+    "RetrievalExplanation",
+    "RetrievalExplainer",
     "HierarchicalRetriever",
     "ParentChunk",
     "AdaptiveHybridFuser",

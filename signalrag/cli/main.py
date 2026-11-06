@@ -1288,3 +1288,33 @@ def cluster_corpus_cli(
         console.print(
             f"  • Cluster #{cl.cluster_id} ([bold green]{cl.topic_name}[/bold green]): {cl.size} chunks (IDs: {cl.chunk_ids})"
         )
+
+
+@app.command("explain")
+def explain_ranking_cli(
+    query_text: Annotated[str, typer.Argument(help="Query to evaluate")],
+    chunk_text: Annotated[
+        str, typer.Option("--text", "-t", help="Candidate chunk text")
+    ] = "SignalRAG uses hybrid BM25 and vector search for high recall.",
+) -> None:
+    """Explain ranking and attribution factors for a retrieved chunk."""
+    from signalrag.models.chunk import Chunk, ChunkMetadata
+    from signalrag.retrieval.explainer import RetrievalExplainer
+
+    chunk = Chunk(
+        id="sample_chunk_01",
+        document_id="doc_sample",
+        text=chunk_text,
+        metadata=ChunkMetadata(document_id="doc_sample", chunk_index=0, source="spec.txt"),
+    )
+
+    explainer = RetrievalExplainer()
+    explanation = explainer.explain(query_text, chunk)
+
+    console.print("[bold cyan]Retrieval Explanation:[/bold cyan]")
+    console.print(f"  • Query: {query_text}")
+    console.print(f"  • Overall Score: [bold green]{explanation.overall_score:.3f}[/bold green]")
+    console.print(f"  • Dense Cosine Similarity: {explanation.dense_similarity:.3f}")
+    console.print(f"  • Lexical Overlap: {explanation.lexical_overlap * 100:.1f}%")
+    console.print(f"  • Matching Query Terms: {explanation.matching_terms}")
+    console.print(f"  • Diagnosis: {explanation.summary}")
