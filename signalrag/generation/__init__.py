@@ -5,6 +5,7 @@ from signalrag.generation.citations import (
     ClaimCitation,
     TrackedAnswer,
 )
+from signalrag.generation.crag import CRAGAssessment, CRAGEvaluator
 from signalrag.generation.engine import RAGResponse, SignalRAGEngine
 from signalrag.generation.generator import AnswerGenerator, GeneratedAnswer
 from signalrag.generation.guardrails import (
@@ -46,5 +47,7 @@ __all__ = [
     "StreamEvent",
     "StreamingRAGResponse",
     "SignalRAGEngine",
+    "CRAGAssessment",
+    "CRAGEvaluator",
     "RAGResponse",
 ]

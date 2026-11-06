@@ -1166,3 +1166,31 @@ def batch_index_cli(
     console.print(
         f"  • Duration: {report.elapsed_seconds}s | Throughput: [green]{report.chunks_per_second:.1f} chunks/sec[/green]"
     )
+
+
+@app.command("crag")
+def crag_query_cli(
+    query_text: Annotated[str, typer.Argument(help="Query to evaluate with Corrective RAG (CRAG)")],
+) -> None:
+    """Evaluate retrieval confidence and apply Corrective RAG (CRAG) action."""
+    from signalrag.generation.crag import CRAGEvaluator
+    from signalrag.models.chunk import Chunk, ChunkMetadata
+
+    sample_chunks = [
+        Chunk(
+            id="c1",
+            document_id="d1",
+            text="SignalRAG architecture implements hybrid search, vector indices, and BM25.",
+            metadata=ChunkMetadata(document_id="d1", chunk_index=0, source="core.txt"),
+        )
+    ]
+
+    evaluator = CRAGEvaluator()
+    assessment = evaluator.evaluate_retrieval(query_text, sample_chunks)
+
+    console.print(f"[bold cyan]CRAG Query:[/bold cyan] {query_text}")
+    console.print(
+        f"  • Grade: [bold yellow]{assessment.grade.upper()}[/bold yellow] (Confidence: {assessment.confidence:.2f})"
+    )
+    console.print(f"  • Action: [green]{assessment.action}[/green]")
+    console.print(f"  • Retained Chunks: {assessment.retained_chunk_ids}")
