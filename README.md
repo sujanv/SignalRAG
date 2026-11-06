@@ -5,7 +5,7 @@
 [![Coverage](https://img.shields.io/badge/coverage-89%25-brightgreen.svg)](https://github.com/sujanv/SignalRAG)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-> **Enterprise-grade RAG platform featuring hybrid search, GraphRAG entity-relation networks, Self-Reflective RAG (Self-RAG), Hypothetical Document Embeddings (HyDE), hierarchical parent-child retrieval, multi-tenant RBAC, semantic caching, and automated regression benchmarking.**
+> **Enterprise-grade RAG platform featuring hybrid search, GraphRAG entity-relation networks, Corrective RAG (CRAG), Contextual Retrieval, Self-Reflective RAG (Self-RAG), Hypothetical Document Embeddings (HyDE), hierarchical parent-child retrieval, Server-Sent Events (SSE) streaming, adversarial red-teaming, multi-tenant RBAC, and automated regression benchmarking.**
 
 SignalRAG is a production-grade Retrieval-Augmented Generation (RAG) platform, experimentation framework, and diagnostic engine built from the ground up for high precision, verifiable claim grounding, and scientific evaluation.
 
@@ -14,62 +14,72 @@ SignalRAG is a production-grade Retrieval-Augmented Generation (RAG) platform, e
 ## Architecture
 
 ```
-                                  User Query
-                                      │
-                   ┌──────────────────┴──────────────────┐
-                   ▼                                     ▼
-      Semantic Query Cache (Hit)             Semantic Query Router
-      (Fast Near-Neighbor Return)                        │
-                                                         ▼
-                                             Multi-Hop Decomposer
-                                                         │
-                        ┌────────────────────────────────┼────────────────────────────────┐
-                        ▼                                ▼                                ▼
-               BM25 Lexical Search               Dense Vector Search            GraphRAG Entity Network
-             (Inverted Index Scores)           (HyDE / Parent-Child Chunks)    (Associative Knowledge Graph)
-                        │                                │                                │
-                        └────────────────────────────────┼────────────────────────────────┘
-                                                         ▼
-                                           Adaptive Hybrid Fusion
-                                       (Query-Conditioned Alpha Normalization)
-                                                         │
-                                                         ▼
-                                            Multi-Tenant RBAC Guard
-                                                         │
-                                                         ▼
-                                           Semantic Chunk Deduplication
-                                                         │
-                                                         ▼
-                                              Cross-Encoder Reranker
-                                                         │
-                                                         ▼
-                                           Context Sentence Compression
-                                                         │
-                                                         ▼
-                                          Dynamic Token Budget Allocator
-                                                         │
-                                                         ▼
-                                           Self-Reflective RAG Evaluator
-                                           (Relevance Grading / Re-query)
-                                                         │
-                                                         ▼
-                                                 LLM Generation
-                                                         │
-                                                         ▼
-                                           Footnote Citation Attribution
-                                                         │
-                                                         ▼
-                                          Hallucination & Claim Verifier
-                                                         │
-                                                         ▼
-                                      Prometheus & OpenTelemetry Telemetry
+                                  User Query / Conversational Chat
+                                                │
+                             ┌──────────────────┴──────────────────┐
+                             ▼                                     ▼
+                Semantic Query Cache (Hit)             Conversational Memory / Coreference
+                (Fast Near-Neighbor Return)                        │
+                                                                   ▼
+                                                         Semantic Query Router
+                                                                   │
+                                                       Multi-Hop Decomposer
+                                                                   │
+                         ┌─────────────────────────────────────────┼─────────────────────────────────────────┐
+                         ▼                                         ▼                                         ▼
+                BM25 Lexical Search                       Dense Vector Search                     GraphRAG Entity Network
+             (Contextual Chunk Headers)               (HyDE / Parent-Child Chunks)             (Associative Knowledge Graph)
+                         │                                         │                                         │
+                         └─────────────────────────────────────────┼─────────────────────────────────────────┘
+                                                                   ▼
+                                                     Adaptive Hybrid Fusion
+                                                 (Query-Conditioned Alpha Weighting)
+                                                                   │
+                                                                   ▼
+                                                      Multi-Tenant RBAC Guard
+                                                                   │
+                                                                   ▼
+                                                     Semantic Chunk Deduplication
+                                                                   │
+                                                                   ▼
+                                                        Cross-Encoder Reranker
+                                                                   │
+                                                                   ▼
+                                                     Context Sentence Compression
+                                                                   │
+                                                                   ▼
+                                                    Dynamic Token Budget Allocator
+                                                                   │
+                                                                   ▼
+                                                      Corrective RAG (CRAG) Evaluator
+                                                     (High / Ambiguous / Web Fallback)
+                                                                   │
+                                                                   ▼
+                                                     Self-Reflective RAG Evaluator
+                                                     (Relevance Grading / Re-query)
+                                                                   │
+                                                                   ▼
+                                                            LLM Generation
+                                                                   │
+                                 ┌─────────────────────────────────┴─────────────────────────────────┐
+                                 ▼                                                                   ▼
+                    Footnote Citation Attribution                                       Server-Sent Events (SSE) Stream
+                                 │                                                       (Real-Time Token & Source Delivery)
+                                 ▼
+                     Hallucination & Claim Verifier
+                                 │
+                                 ▼
+                     Adversarial Red-Team Defense
+                                 │
+                                 ▼
+                 Prometheus & OpenTelemetry Telemetry
 ```
 
 ---
 
 ## Evaluation Benchmark & Quality Gates
 
-SignalRAG includes a built-in benchmark evaluation engine, synthetic dataset generator, failure taxonomy, and automated regression guards:
+SignalRAG includes a built-in benchmark evaluation engine, synthetic dataset generator, failure taxonomy, automated regression guards, and adversarial red-teaming:
 
 ```
 SignalRAG Evaluation
@@ -83,6 +93,10 @@ Retrieval
 Generation
   Faithfulness          91.2%
   Answer Relevance      89.7%
+
+Safety & Robustness
+  Adversarial Defense   100.0%
+  Hallucination Refusal 96.8%
 
 Performance
   P50 latency           1.2s
@@ -119,6 +133,13 @@ SignalRAG provides a unified command-line tool `signalrag` for end-to-end operat
 | Command | Description | Example Usage |
 | :--- | :--- | :--- |
 | `query` | Execute question answering with cited footnotes | `signalrag query "What is BM25?"` |
+| `stream` | Stream tokens in real-time via Server-Sent Events | `signalrag stream "Explain vector search"` |
+| `chat` | Conversational multi-turn session with coreference | `signalrag chat "Can it handle circular dependencies?" -s user1` |
+| `crag` | Corrective RAG retrieval confidence evaluation & web fallback | `signalrag crag "quantum computing principles"` |
+| `contextualize` | Enrich document chunks with situational context headers | `signalrag contextualize --id doc1 --text "..."` |
+| `cluster` | Unsupervised corpus topic clustering & centroid discovery | `signalrag cluster --k 3` |
+| `explain` | Token-level saliency attribution & ranking explanation | `signalrag explain "hybrid search" -t "..."` |
+| `redteam` | Automated adversarial prompt injection & refusal audit | `signalrag redteam` |
 | `ingest` | Load and parse documents from filesystem | `signalrag ingest ./data` |
 | `index` | Build vector and lexical search indices | `signalrag index` |
 | `batch-index` | Multi-threaded concurrent batch indexing | `signalrag batch-index --workers 4 --count 50` |
@@ -195,9 +216,12 @@ func main() {
 }
 ```
 
-#### Native Go CLI and Batch Indexer Tools
+#### Native Go Streaming, Batch Indexer, and Query CLI Tools
 ```bash
-# Query via standalone Go binary
+# Real-time token streaming client in Go
+go run clients/go/cmd/signalrag-stream/main.go -url http://localhost:8000/query/stream -q "Explain streaming retrieval"
+
+# Standalone query tool in Go
 go run clients/go/cmd/signalrag-cli/main.go query -url http://localhost:8000 -k 3 "What is BM25?"
 
 # High-concurrency batch loader in Go
@@ -206,31 +230,7 @@ go run clients/go/cmd/signalrag-batch/main.go -url http://localhost:8000 -worker
 
 ---
 
-## Production Observability & Prometheus
-
-SignalRAG exports enterprise Prometheus metrics and OpenTelemetry span context:
-
-- **JSON Summary**: `GET http://localhost:8000/metrics`
-- **Prometheus Text Format**: `GET http://localhost:8000/metrics/prometheus`
-
-```prometheus
-# HELP signalrag_queries_total Total number of RAG queries executed.
-# TYPE signalrag_queries_total counter
-signalrag_queries_total{status="success"} 42
-signalrag_queries_total{status="error"} 0
-
-# HELP signalrag_latency_seconds_sum Total cumulative latency across queries.
-# TYPE signalrag_latency_seconds_sum counter
-signalrag_latency_seconds_sum 1.845012
-
-# HELP signalrag_retrieved_chunks_total Total number of candidate chunks retrieved.
-# TYPE signalrag_retrieved_chunks_total counter
-signalrag_retrieved_chunks_total 126
-```
-
----
-
-## Complete Build Progression (Hours 01–64)
+## Complete Build Progression (Hours 01–72)
 
 - **Phase 1 — Foundation (Hours 01–06)**: Project initialization, config system, document models, ingestion loaders, PDF parser, ingestion test suite.
 - **Phase 2 — Chunking & Indexing (Hours 07–12)**: Recursive & token chunking, metadata extraction, embedding services, vector store, indexing pipeline, incremental cache ledger.
@@ -238,33 +238,18 @@ signalrag_retrieved_chunks_total 126
 - **Phase 4 — Generation & Citations (Hours 20–24)**: Answer generation, citation tracking, footnote rendering, grounded-answer guardrails, streaming responses.
 - **Phase 5 — Evaluation (Hours 25–30)**: Evaluation benchmark dataset, retrieval IR metrics (Recall, Precision, MRR, NDCG), answer metrics (faithfulness, relevance), evaluation runner CLI, experiment tracking, Rich dashboard.
 - **Phase 6 — Deep Diagnostics & Polish (Hours 31–40)**: Retrieval debugger, root cause failure analysis, side-by-side experiment comparison, FastAPI REST API, modern Web UI, observability & telemetry, caching layer, Docker containerization, GitHub Actions CI/CD, documentation & interactive demo.
-- **Phase 7 — Enterprise Enhancements (Hours 41–48)**:
-  - **Hour 41**: Multi-hop query decomposition and reasoning retrieval.
-  - **Hour 42**: Persistent SQLite vector store with ACID metadata indexing.
-  - **Hour 43**: Synthetic evaluation dataset generator.
-  - **Hour 44**: Semantic query router (BM25, Semantic, MultiHop, Hybrid).
-  - **Hour 45**: Hallucination detector and claim-level attribution verification.
-  - **Hour 46**: Prometheus metrics exposition and OpenTelemetry tracing.
-  - **Hour 47**: Official Python and Golang client SDKs.
-  - **Hour 48**: Architecture and production operations guide.
-- **Phase 8 — Advanced Reliability & Security (Hours 49–56)**:
-  - **Hour 49**: Pseudo-Relevance Feedback (PRF) and query expansion.
-  - **Hour 50**: Document versioning and point-in-time temporal filtering.
-  - **Hour 51**: Dynamic context window & token budget allocator.
-  - **Hour 52**: Semantic chunk deduplication and clustering.
-  - **Hour 53**: Multi-tenant isolation and Role-Based Access Control (RBAC).
-  - **Hour 54**: Automated RAG regression testing and quality gatekeeper.
-  - **Hour 55**: Standalone Golang CLI tool and async Python client SDK.
-  - **Hour 56**: Advanced enterprise features documentation.
-- **Phase 9 — Context Graphs & Cognitive RAG (Hours 57–64)**:
-  - **Hour 57**: Entity-relationship knowledge graph retrieval (GraphRAG).
-  - **Hour 58**: Self-Reflective RAG (Self-RAG) with relevance grading & query reformulation.
-  - **Hour 59**: Adaptive hybrid fusion weighting with score normalization.
-  - **Hour 60**: Hierarchical parent-child small-to-big document retrieval.
-  - **Hour 61**: Semantic similarity query cache with vector cosine proximity & TTL.
-  - **Hour 62**: Hypothetical Document Embeddings (HyDE) zero-shot passage synthesis.
-  - **Hour 63**: Concurrent multi-threaded batch indexing pipeline and Go loader.
-  - **Hour 64**: Comprehensive enterprise operations and GraphRAG guide.
+- **Phase 7 — Enterprise Enhancements (Hours 41–48)**: Multi-hop query decomposition, persistent SQLite vector store, synthetic evaluation dataset generator, semantic query router, hallucination detection & claim attribution, Prometheus metrics & OpenTelemetry tracing, Python & Go client SDKs, architecture and operations guide.
+- **Phase 8 — Advanced Reliability & Security (Hours 49–56)**: Pseudo-Relevance Feedback (PRF), document versioning & temporal point-in-time filtering, dynamic token budget allocator, semantic chunk deduplication, multi-tenant RBAC security, automated regression benchmarking, standalone Go CLI, enterprise documentation.
+- **Phase 9 — Context Graphs & Cognitive RAG (Hours 57–64)**: GraphRAG entity-relation associative retrieval, Self-Reflective RAG (Self-RAG), adaptive hybrid fusion weighting, hierarchical parent-child retrieval, semantic similarity query cache, HyDE generator, concurrent multi-threaded batch indexing, GraphRAG architecture documentation.
+- **Phase 10 — Autonomous Agentic Workflows & Enterprise Scale (Hours 65–72)**:
+  - **Hour 65**: Corrective RAG (CRAG) retrieval evaluation and fallback web synthesis.
+  - **Hour 66**: Contextual BM25 and dense chunk header enrichment.
+  - **Hour 67**: Agentic conversational memory and multi-turn state.
+  - **Hour 68**: Semantic document clustering and topic modeling.
+  - **Hour 69**: Explainable retrieval attribution and feature heatmaps.
+  - **Hour 70**: Streaming SSE event source API and native Go subscriber.
+  - **Hour 71**: Autonomous evaluation red-teaming adversarial generator.
+  - **Hour 72**: CRAG agentic workflows and streaming architecture documentation.
 
 ---
 
