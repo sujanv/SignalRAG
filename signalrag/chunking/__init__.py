@@ -1,6 +1,7 @@
 """Document chunking, token splitting, and metadata extraction."""
 
 from signalrag.chunking.base import BaseChunker, get_token_counter
+from signalrag.chunking.contextual import ContextualChunkEnricher
 from signalrag.chunking.dedup import DedupReport, SemanticChunkDeduplicator, jaccard_similarity
 from signalrag.chunking.metadata_extractor import ChunkMetadataExtractor
 from signalrag.chunking.recursive import RecursiveCharacterChunker
@@ -11,6 +12,7 @@ __all__ = [
     "get_token_counter",
     "ChunkMetadataExtractor",
     "RecursiveCharacterChunker",
+    "ContextualChunkEnricher",
     "TokenChunker",
     "DedupReport",
     "SemanticChunkDeduplicator",

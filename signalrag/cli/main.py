@@ -1194,3 +1194,33 @@ def crag_query_cli(
     )
     console.print(f"  • Action: [green]{assessment.action}[/green]")
     console.print(f"  • Retained Chunks: {assessment.retained_chunk_ids}")
+
+
+@app.command("contextualize")
+def contextualize_cli(
+    doc_id: Annotated[
+        str, typer.Option("--id", "-i", help="Document identifier")
+    ] = "doc_enterprise_spec",
+    content: Annotated[
+        str, typer.Option("--text", "-t", help="Raw document content")
+    ] = "SignalRAG specification detailing hybrid search equations and retrieval pipelines.",
+) -> None:
+    """Enrich document chunks with situational context headers (Contextual Retrieval)."""
+    from signalrag.chunking.contextual import ContextualChunkEnricher
+    from signalrag.chunking.recursive import RecursiveCharacterChunker
+    from signalrag.models.document import Document
+
+    doc = Document(id=doc_id, text=content, metadata={"source": f"{doc_id}.md"})
+    chunker = RecursiveCharacterChunker(chunk_size=60, chunk_overlap=10, min_chunk_size=10)
+    raw_chunks = chunker.chunk_document(doc)
+
+    enricher = ContextualChunkEnricher()
+    enriched = enricher.enrich_chunks(doc, raw_chunks)
+
+    console.print("[bold cyan]Contextual Retrieval Enrichment:[/bold cyan]")
+    console.print(f"  • Source Document: {doc_id}")
+    console.print(f"  • Chunks Enriched: {len(enriched)}")
+    if enriched:
+        console.print(
+            f"[bold green]Enriched Chunk Preview:[/bold green]\n{enriched[0].text[:180]}..."
+        )
