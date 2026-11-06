@@ -1224,3 +1224,27 @@ def contextualize_cli(
         console.print(
             f"[bold green]Enriched Chunk Preview:[/bold green]\n{enriched[0].text[:180]}..."
         )
+
+
+@app.command("chat")
+def chat_turn_cli(
+    query_text: Annotated[str, typer.Argument(help="User message to the conversational assistant")],
+    session_id: Annotated[
+        str, typer.Option("--session", "-s", help="Unique session identifier")
+    ] = "default_session",
+) -> None:
+    """Multi-turn conversational RAG with coreference resolution and dialogue history."""
+    from signalrag.generation.conversational import ConversationalRAGManager
+
+    mgr = ConversationalRAGManager()
+    mgr.add_turn(
+        session_id, "What is SignalRAG?", "SignalRAG is a high-precision enterprise RAG engine."
+    )
+
+    condensed = mgr.condense_query(session_id, query_text)
+    history_ctx = mgr.format_history_context(session_id)
+
+    console.print(f"[bold cyan]Conversational RAG (Session: {session_id}):[/bold cyan]")
+    console.print(f"  • Raw Input: {query_text}")
+    console.print(f"  • Condensed Query: [bold green]{condensed}[/bold green]")
+    console.print(f"  • Dialogue Context:\n{history_ctx}")

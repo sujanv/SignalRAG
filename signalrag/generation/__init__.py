@@ -5,6 +5,11 @@ from signalrag.generation.citations import (
     ClaimCitation,
     TrackedAnswer,
 )
+from signalrag.generation.conversational import (
+    ChatMessage,
+    ConversationalRAGManager,
+    ConversationSession,
+)
 from signalrag.generation.crag import CRAGAssessment, CRAGEvaluator
 from signalrag.generation.engine import RAGResponse, SignalRAGEngine
 from signalrag.generation.generator import AnswerGenerator, GeneratedAnswer
@@ -49,5 +54,8 @@ __all__ = [
     "SignalRAGEngine",
     "CRAGAssessment",
     "CRAGEvaluator",
+    "ChatMessage",
+    "ConversationSession",
+    "ConversationalRAGManager",
     "RAGResponse",
 ]
