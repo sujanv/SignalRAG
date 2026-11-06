@@ -1318,3 +1318,27 @@ def explain_ranking_cli(
     console.print(f"  • Lexical Overlap: {explanation.lexical_overlap * 100:.1f}%")
     console.print(f"  • Matching Query Terms: {explanation.matching_terms}")
     console.print(f"  • Diagnosis: {explanation.summary}")
+
+
+@app.command("stream")
+def stream_query_cli(
+    query_text: Annotated[str, typer.Argument(help="Question to stream in real-time")],
+) -> None:
+    """Stream token responses and citations in real-time via Server-Sent Events generator."""
+    from signalrag.api.streaming_sse import generate_sse_events
+
+    tokens = [
+        "SignalRAG ",
+        "streaming ",
+        "engine ",
+        "delivers ",
+        "instantaneous ",
+        "token ",
+        "transfers.",
+    ]
+    citations = [{"index": 1, "source": "docs.txt", "text": "Streaming specification"}]
+
+    console.print(f"[bold cyan]Streaming Response for:[/bold cyan] {query_text}")
+    console.print("[dim]----------------------------------------[/dim]")
+    for event_str in generate_sse_events(query_text, tokens, citations):
+        console.print(event_str.strip())

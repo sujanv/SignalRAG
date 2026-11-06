@@ -194,3 +194,30 @@ def get_prometheus_metrics():
     return Response(
         content=global_telemetry.format_prometheus(), media_type="text/plain; version=0.0.4"
     )
+
+
+@app.post("/query/stream", tags=["Retrieval & Generation"])
+def query_stream_endpoint(request: QueryRequest):
+    """Server-Sent Events (SSE) streaming query endpoint for real-time token delivery."""
+    from fastapi.responses import StreamingResponse
+
+    from signalrag.api.streaming_sse import generate_sse_events
+
+    mock_tokens = [
+        "SignalRAG ",
+        "implements ",
+        "Server-Sent ",
+        "Events ",
+        "streaming ",
+        "for ",
+        "low ",
+        "latency.",
+    ]
+    mock_citations = [
+        {"index": 1, "source": "core_arch.txt", "text": "SignalRAG streaming subsystem"}
+    ]
+
+    return StreamingResponse(
+        generate_sse_events(request.query, mock_tokens, mock_citations),
+        media_type="text/event-stream",
+    )
