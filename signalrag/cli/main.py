@@ -1248,3 +1248,43 @@ def chat_turn_cli(
     console.print(f"  • Raw Input: {query_text}")
     console.print(f"  • Condensed Query: [bold green]{condensed}[/bold green]")
     console.print(f"  • Dialogue Context:\n{history_ctx}")
+
+
+@app.command("cluster")
+def cluster_corpus_cli(
+    k_clusters: Annotated[int, typer.Option("--k", "-k", help="Number of semantic clusters")] = 3,
+) -> None:
+    """Discover semantic topics and cluster indexed corpus chunks."""
+    from signalrag.embeddings.hash_embedding import DeterministicHashEmbeddingService
+    from signalrag.models.chunk import Chunk, ChunkMetadata
+    from signalrag.retrieval.clustering import SemanticClusterEngine
+
+    emb = DeterministicHashEmbeddingService(dimension=32)
+    sample_texts = [
+        "Distributed database replication and consensus protocols.",
+        "Raft and Paxos leader election algorithms in clusters.",
+        "Deep neural network backpropagation and gradient descent.",
+        "Convolutional layers and transformer attention mechanisms.",
+        "Financial compliance and regulatory auditing requirements.",
+        "Accounting standards GAAP and balance sheet reporting.",
+    ]
+
+    chunks = []
+    for i, txt in enumerate(sample_texts):
+        c = Chunk(
+            id=f"c_{i}",
+            document_id=f"d_{i}",
+            text=txt,
+            metadata=ChunkMetadata(document_id=f"d_{i}", chunk_index=0, source=f"s_{i}.txt"),
+            embedding=emb.embed_text(txt),
+        )
+        chunks.append(c)
+
+    engine = SemanticClusterEngine(k=k_clusters)
+    clusters = engine.cluster_chunks(chunks)
+
+    console.print(f"[bold cyan]Corpus Topic Clusters ({len(clusters)} clusters):[/bold cyan]")
+    for cl in clusters:
+        console.print(
+            f"  • Cluster #{cl.cluster_id} ([bold green]{cl.topic_name}[/bold green]): {cl.size} chunks (IDs: {cl.chunk_ids})"
+        )

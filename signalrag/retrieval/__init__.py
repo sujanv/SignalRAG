@@ -3,6 +3,7 @@
 from signalrag.retrieval.adaptive_fusion import AdaptiveHybridFuser, FusionWeights
 from signalrag.retrieval.base import BaseRetriever
 from signalrag.retrieval.bm25 import BM25Retriever
+from signalrag.retrieval.clustering import ClusterCentroid, SemanticClusterEngine
 from signalrag.retrieval.compressor import (
     BaseContextCompressor,
     SentenceRelevanceCompressor,
@@ -52,6 +53,8 @@ __all__ = [
     "HypotheticalDocument",
     "CacheEntry",
     "SemanticQueryCache",
+    "ClusterCentroid",
+    "SemanticClusterEngine",
     "HierarchicalRetriever",
     "ParentChunk",
     "AdaptiveHybridFuser",
