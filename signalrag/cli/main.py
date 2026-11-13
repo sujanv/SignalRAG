@@ -1358,3 +1358,32 @@ def redteam_cli() -> None:
     for p in report.probes:
         status_icon = "[green]✓ PASS[/green]" if p.passed else "[red]✗ FAIL[/red]"
         console.print(f"  • [{p.category}] {p.probe_id}: {status_icon} - {p.notes}")
+
+
+@app.command("table-query")
+def table_query_cli(
+    query_text: Annotated[str, typer.Argument(help="Question against structured table")],
+) -> None:
+    """Parse Markdown tables, serialize rows with schema context, and retrieve matching rows."""
+    from signalrag.retrieval.tabular import TabularRetriever
+
+    sample_table = """
+| Quarter | Revenue | Growth | P50_Latency |
+| --- | --- | --- | --- |
+| Q1_2025 | $12.4M | 14% | 1.4s |
+| Q2_2025 | $15.1M | 22% | 1.1s |
+| Q3_2025 | $18.9M | 25% | 0.9s |
+"""
+
+    retriever = TabularRetriever()
+    tables = retriever.extract_tables(sample_table, document_id="financial_summary")
+
+    console.print(f"[bold cyan]Tabular RAG Search:[/bold cyan] {query_text}")
+    if tables:
+        tbl = tables[0]
+        matches = retriever.query_table(query_text, tbl)
+        console.print(f"  • Table ID: [green]{tbl.table_id}[/green] ({len(tbl.rows)} rows)")
+        console.print(f"  • Headers: {tbl.headers}")
+        console.print("[bold yellow]Matching Serialized Rows:[/bold yellow]")
+        for m in matches:
+            console.print(f"    - {m}")
