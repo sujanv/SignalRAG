@@ -1387,3 +1387,34 @@ def table_query_cli(
         console.print("[bold yellow]Matching Serialized Rows:[/bold yellow]")
         for m in matches:
             console.print(f"    - {m}")
+
+
+@app.command("speculative-query")
+def speculative_query_cli(
+    query_text: Annotated[str, typer.Argument(help="Question to process with Speculative RAG")],
+) -> None:
+    """Run speculative draft generation followed by citation grounding verification."""
+    from signalrag.generation.speculative import SpeculativeRAGEngine
+    from signalrag.models.chunk import Chunk, ChunkMetadata
+
+    sample_chunks = [
+        Chunk(
+            id="c_spec_01",
+            document_id="doc_spec",
+            text="SignalRAG speculative decoding reduces time-to-first-token while maintaining 91% faithfulness.",
+            metadata=ChunkMetadata(document_id="doc_spec", chunk_index=0, source="perf.md"),
+        )
+    ]
+
+    engine = SpeculativeRAGEngine()
+    draft = engine.draft(query_text, sample_chunks)
+    verified = engine.verify(query_text, draft, sample_chunks)
+
+    console.print("[bold cyan]Speculative RAG Pipeline:[/bold cyan]")
+    console.print(f"  • Draft Answer ({draft.draft_latency_ms}ms): [dim]{draft.draft_answer}[/dim]")
+    console.print(
+        f"  • Verified Answer ({verified.total_latency_ms}ms total): [bold green]{verified.verified_answer}[/bold green]"
+    )
+    console.print(
+        f"  • Grounding Confidence: {verified.grounding_confidence:.2f} | Modified: {verified.modifications_made}"
+    )

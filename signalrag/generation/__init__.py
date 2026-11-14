@@ -30,6 +30,11 @@ from signalrag.generation.prompts import (
     format_rag_prompt,
 )
 from signalrag.generation.rendering import CitationRenderer
+from signalrag.generation.speculative import (
+    SpeculativeDraft,
+    SpeculativeRAGEngine,
+    VerifiedSpeculativeResponse,
+)
 from signalrag.generation.streaming import StreamEvent, StreamingRAGResponse
 
 __all__ = [
@@ -54,6 +59,9 @@ __all__ = [
     "SignalRAGEngine",
     "CRAGAssessment",
     "CRAGEvaluator",
+    "SpeculativeDraft",
+    "VerifiedSpeculativeResponse",
+    "SpeculativeRAGEngine",
     "ChatMessage",
     "ConversationSession",
     "ConversationalRAGManager",
