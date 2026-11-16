@@ -46,6 +46,7 @@ from signalrag.retrieval.rewriter import (
 from signalrag.retrieval.router import QueryRouter, RouteDecision
 from signalrag.retrieval.semantic import SemanticRetriever
 from signalrag.retrieval.semantic_cache import CacheEntry, SemanticQueryCache
+from signalrag.retrieval.cache_invalidation import CacheInvalidationLedger, InvalidationReport
 from signalrag.retrieval.tabular import TableChunk, TableRow, TabularRetriever
 
 __all__ = [
@@ -60,6 +61,8 @@ __all__ = [
     "TableRow",
     "TableChunk",
     "TabularRetriever",
+    "InvalidationReport",
+    "CacheInvalidationLedger",
     "TokenMatch",
     "RetrievalExplanation",
     "RetrievalExplainer",

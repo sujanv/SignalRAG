@@ -1418,3 +1418,34 @@ def speculative_query_cli(
     console.print(
         f"  • Grounding Confidence: {verified.grounding_confidence:.2f} | Modified: {verified.modifications_made}"
     )
+
+
+@app.command("cache-invalidate")
+def cache_invalidate_cli(
+    doc_id: Annotated[str, typer.Option("--doc-id", "-d", help="ID of document that changed")] = "doc_policy_01",
+) -> None:
+    """Selectively invalidate semantic query cache entries depending on a changed document."""
+    from signalrag.models.chunk import Chunk, ChunkMetadata
+    from signalrag.models.retrieval import SearchResult
+    from signalrag.retrieval.cache_invalidation import CacheInvalidationLedger
+    from signalrag.retrieval.semantic_cache import SemanticQueryCache
+
+    cache = SemanticQueryCache()
+    ledger = CacheInvalidationLedger()
+
+    # Seed mock cached query
+    q1 = "What is the policy deadline?"
+    chunk = Chunk(
+        id=f"{doc_id}_c1",
+        document_id=doc_id,
+        text="The deadline is May 1.",
+        metadata=ChunkMetadata(document_id=doc_id, chunk_index=0, source="policy.txt"),
+    )
+    cache.set(q1, [1.0, 0.0], [SearchResult(chunk=chunk, score=0.95)])
+    ledger.register_dependency(doc_id, q1)
+
+    report = ledger.invalidate_document(doc_id, cache)
+    console.print(f"[bold cyan]Semantic Cache Invalidation Report:[/bold cyan]")
+    console.print(f"  • Invalidation Target: [bold red]{report.document_id}[/bold red]")
+    console.print(f"  • Purged Cache Keys: {report.purged_keys}")
+    console.print(f"  • Remaining Cache Size: {report.remaining_entries}")
